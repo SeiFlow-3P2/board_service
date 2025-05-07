@@ -1,4 +1,4 @@
-module board_service
+module github.com/SeiFlow-3P2/board_service
 
 go 1.24.2
 
