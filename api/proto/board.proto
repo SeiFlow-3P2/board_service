@@ -5,7 +5,7 @@ import "google/protobuf/empty.proto";
 
 package board;
 
-option go_package = "board_service/api/proto/board;board_v1";
+option go_package = "board_service/pkg/board;board_v1";
 
 service BoardService {
     rpc CreateBoard(CreateBoardRequest) returns (BoardResponse) {}
@@ -15,6 +15,7 @@ service BoardService {
     rpc DeleteBoard(DeleteBoardRequest) returns (google.protobuf.Empty) {}
 
     rpc CreateColumn(CreateColumnRequest) returns (ColumnResponse) {}
+    rpc UpdateColumn(UpdateColumnRequest) returns (ColumnResponse) {}
     rpc DeleteColumn(DeleteColumnRequest) returns (google.protobuf.Empty) {}
 
     rpc CreateTask(CreateTaskRequest) returns (TaskResponse) {}
@@ -103,6 +104,11 @@ message ColumnResponse {
 
 message DeleteColumnRequest {
     string id = 1;
+}
+
+message UpdateColumnRequest {
+    string id = 1;
+    optional google.protobuf.StringValue name = 2;
 }
 
 // Tasks
