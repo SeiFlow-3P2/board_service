@@ -2,26 +2,81 @@ syntax = "proto3";
 
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
 
-package board;
+package board_v1;
 
-option go_package = "board_service/pkg/board;board_v1";
+option go_package = "board_service/pkg/proto/board/v1;board_v1";
 
 service BoardService {
-    rpc CreateBoard(CreateBoardRequest) returns (BoardResponse) {}
-    rpc GetBoards(GetBoardsRequest) returns (BoardResponse) {}
-    rpc GetBoardInfo(GetBoardInfoRequest) returns (GetBoardInfoResponse) {}
-    rpc UpdateBoard(UpdateBoardRequest) returns (BoardResponse) {}
-    rpc DeleteBoard(DeleteBoardRequest) returns (google.protobuf.Empty) {}
+    rpc CreateBoard(CreateBoardRequest) returns (BoardResponse) {
+        option (google.api.http) = {
+            post: "/v1/boards"
+            body: "*"
+        };
+    }
+    rpc GetBoards(GetBoardsRequest) returns (BoardResponse) {
+        option (google.api.http) = {
+            get: "/v1/boards"
+        };
+    }
+    rpc GetBoardInfo(GetBoardInfoRequest) returns (GetBoardInfoResponse) {
+        option (google.api.http) = {
+            get: "/v1/boards/{id}"
+        };
+    }
+    rpc UpdateBoard(UpdateBoardRequest) returns (BoardResponse) {
+        option (google.api.http) = {
+            patch: "/v1/boards/{id}"
+            body: "*"
+        };
+    }
+    rpc DeleteBoard(DeleteBoardRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/boards/{id}"
+        };
+    }
 
-    rpc CreateColumn(CreateColumnRequest) returns (ColumnResponse) {}
-    rpc UpdateColumn(UpdateColumnRequest) returns (ColumnResponse) {}
-    rpc DeleteColumn(DeleteColumnRequest) returns (google.protobuf.Empty) {}
+    rpc CreateColumn(CreateColumnRequest) returns (ColumnResponse) {
+        option (google.api.http) = {
+            post: "/v1/boards/{board_id}/columns"
+        };
+    }
+    rpc UpdateColumn(UpdateColumnRequest) returns (ColumnResponse) {
+        option (google.api.http) = {
+            patch: "/v1/columns/{id}"
+            body: "*"
+        };
+    }
+    rpc DeleteColumn(DeleteColumnRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/columns/{id}"
+        };
+    }
 
-    rpc CreateTask(CreateTaskRequest) returns (TaskResponse) {}
-    rpc MoveTask(MoveTaskRequest) returns (MoveTaskResponse) {}
-    rpc UpdateTask(UpdateTaskRequest) returns (TaskResponse) {}
-    rpc DeleteTask(DeleteTaskRequest) returns (google.protobuf.Empty) {}
+    rpc CreateTask(CreateTaskRequest) returns (TaskResponse) {
+        option (google.api.http) = {
+            post: "/v1/columns/{column_id}/tasks"
+            body: "*"
+        };
+    }
+    rpc MoveTask(MoveTaskRequest) returns (MoveTaskResponse) {
+        option (google.api.http) = {
+            patch: "/v1/tasks/move/{new_column_id}"
+            body: "*"
+        };
+    }
+    rpc UpdateTask(UpdateTaskRequest) returns (TaskResponse) {
+        option (google.api.http) = {
+            patch: "/v1/tasks/{id}"
+            body: "*"
+        };
+    }
+    rpc DeleteTask(DeleteTaskRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            delete: "/v1/tasks/{id}"
+        };
+    }
 }
 
 // Boards
@@ -44,7 +99,7 @@ message BoardResponse {
 message GetBoardsRequest {}
 
 message GetBoardInfoRequest {
-    string board_id = 1;
+    string id = 1;
 }
 
 message TaskInfo {
