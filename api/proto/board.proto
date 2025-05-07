@@ -1,0 +1,145 @@
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+
+package board;
+
+option go_package = "board_service/api/proto/board;board_v1";
+
+service BoardService {
+    rpc CreateBoard(CreateBoardRequest) returns (BoardResponse) {}
+    rpc GetBoards(GetBoardsRequest) returns (BoardResponse) {}
+    rpc GetBoardInfo(GetBoardInfoRequest) returns (GetBoardInfoResponse) {}
+    rpc UpdateBoard(UpdateBoardRequest) returns (BoardResponse) {}
+    rpc DeleteBoard(DeleteBoardRequest) returns (google.protobuf.Empty) {}
+
+    rpc CreateColumn(CreateColumnRequest) returns (ColumnResponse) {}
+    rpc DeleteColumn(DeleteColumnRequest) returns (google.protobuf.Empty) {}
+
+    rpc CreateTask(CreateTaskRequest) returns (TaskResponse) {}
+    rpc MoveTask(MoveTaskRequest) returns (MoveTaskResponse) {}
+    rpc UpdateTask(UpdateTaskRequest) returns (TaskResponse) {}
+    rpc DeleteTask(DeleteTaskRequest) returns (google.protobuf.Empty) {}
+}
+
+// Boards
+
+message CreateBoardRequest {
+    string name = 1;
+    string description = 2;
+    string methodology = 3;
+    string category = 4;
+}
+
+message BoardResponse {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string methodology = 4;
+    string category = 5;
+}
+
+message GetBoardsRequest {}
+
+message GetBoardInfoRequest {
+    string board_id = 1;
+}
+
+message TaskInfo {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string deadline = 4;
+    bool in_calendar = 5;
+    string column_id = 6;
+}
+
+message ColumnInfo {
+    string id = 1;
+    string name = 2;
+    string board_id = 3;
+    int64 order_number = 4;
+    repeated TaskInfo tasks = 5;
+}
+
+message BoardInfo {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string methodology = 4;
+    string category = 5;
+    repeated ColumnInfo columns = 6;
+}
+
+message GetBoardInfoResponse {
+    BoardInfo board = 1;
+}
+
+message UpdateBoardRequest {
+    string id = 1;
+    optional google.protobuf.StringValue name = 2;
+    optional google.protobuf.StringValue description = 3;
+    optional google.protobuf.StringValue category = 4;
+}
+
+message DeleteBoardRequest {
+    string id = 1;
+}
+
+// Columns
+
+message CreateColumnRequest {
+    string name = 1;
+    string board_id = 2;
+}
+
+message ColumnResponse {
+    string id = 1;
+    string name = 2;
+    string board_id = 3;
+    int64 order_number = 4;
+}
+
+message DeleteColumnRequest {
+    string id = 1;
+}
+
+// Tasks
+
+message CreateTaskRequest {
+    string name = 1;
+    string description = 2;
+    string deadline = 3;
+    bool in_calendar = 4;
+    string column_id = 5;
+}
+
+message TaskResponse {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string deadline = 4;
+    bool in_calendar = 5;
+    string column_id = 6;
+}
+
+message MoveTaskRequest {
+    string task_id = 1;
+    string new_column_id = 2;
+}
+
+message MoveTaskResponse {
+    string task_id = 1;
+    string new_column_id = 2;
+}
+
+message UpdateTaskRequest {
+    string id = 1;
+    optional google.protobuf.StringValue name = 2;
+    optional google.protobuf.StringValue description = 3;
+}
+
+message DeleteTaskRequest {
+    string id = 1;
+}
