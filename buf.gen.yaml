@@ -2,14 +2,14 @@ version: v2
 clean: true
 plugins:
   - local: protoc-gen-go
-    out: pkg/proto/board/v1
+    out: pkg/proto/v1
     opt:
       - paths=source_relative
   - local: protoc-gen-go-grpc
-    out: pkg/proto/board/v1
+    out: pkg/proto/v1
     opt:
       - paths=source_relative
   - local: protoc-gen-grpc-gateway
-    out: pkg/proto/board/v1
+    out: pkg/proto/v1
     opt:
       - paths=source_relative
