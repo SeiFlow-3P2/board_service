@@ -29,4 +29,4 @@ go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@lat
 2. Install [buf](https://github.com/bufbuild/buf)
 3. Copy `buf.gen.yaml` and `buf.yaml` to your codebase.
 4. Adjust configs for your needs. (proto files path, out directories, etc. For better understanding, check buf's [docs](https://buf.build/docs/generate/tutorial))
-5. Run `buf generate`
+5. Run `buf dep update` & `buf generate`
