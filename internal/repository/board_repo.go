@@ -25,7 +25,6 @@ type BoardUpdates struct {
 	Favorite    	 *bool	 					 `bson:"favorite,omitempty"`
 	Columns_amount *int    					 `bson:"columns_amount,omitempty"`
 	Updated_at     *time.Time 			 `bson:"updated_at,omitempty"`
-	Columns        *[]models.Columns `bson:"columns,omitempty"`
 }
 
 type boardRepository struct {
@@ -100,9 +99,6 @@ func (r *boardRepository) UpdateBoard(ctx context.Context, id string, updates *B
 	}
 	if updates.Updated_at != nil {
 		updateFields["updated_at"] = *updates.Updated_at
-	}
-	if updates.Columns != nil {
-		updateFields["columns"] = *updates.Columns
 	}
 
 	if len(updateFields) == 0 {

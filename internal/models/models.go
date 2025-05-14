@@ -18,10 +18,10 @@ type Board struct {
 	Created_at     time.Time `bson:"created_at"`
 	Updated_at     time.Time `bson:"updated_at"`
 	User_id        string    `bson:"user_id"`
-	Columns        []Columns `bson:"columns,omitempty"`
+	Columns        []Column `bson:"columns,omitempty"`
 }
 
-type Columns struct {
+type Column struct {
 	ID           uuid.UUID `bson:"_id,omitempty"`
 	Name         string    `bson:"name"`
 	Order_number int       `bson:"order_number"`
