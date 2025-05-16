@@ -16,6 +16,8 @@ type BoardRepository interface {
 	GetBoards(ctx context.Context, userID string) ([]*models.Board, error)
 	UpdateBoard(ctx context.Context, id string, updates *BoardUpdates) (*models.Board, error)
 	DeleteBoard(ctx context.Context, id string) error
+	IncrementColumnsAmount(ctx context.Context, id string) (string, error)
+	DecrementColumnsAmount(ctx context.Context, id string) error
 }
 
 type BoardUpdates struct {
@@ -23,7 +25,6 @@ type BoardUpdates struct {
 	Description 	 *string 					 `bson:"description,omitempty"`
 	Progress    	 *int    					 `bson:"progress,omitempty"`
 	Favorite    	 *bool	 					 `bson:"favorite,omitempty"`
-	Columns_amount *int    					 `bson:"columns_amount,omitempty"`
 	Updated_at     *time.Time 			 `bson:"updated_at,omitempty"`
 }
 
@@ -51,6 +52,42 @@ func (r *boardRepository) GetBoardInfo(ctx context.Context, id string) (*models.
 	if err != nil {
 		return nil, err
 	}
+
+	columnsCursor, err := r.db.Collection("Columns").Find(ctx, bson.M{"desk_id": id})
+	if err != nil {
+		return nil, err
+	}
+	defer columnsCursor.Close(ctx)
+
+	for columnsCursor.Next(ctx) {
+		var column models.Column
+		if err := columnsCursor.Decode(&column); err != nil {
+			return nil, err
+		}
+		board.Columns = append(board.Columns, column)
+	}
+	if err := columnsCursor.Err(); err != nil {
+		return nil, err
+	}
+
+	for i := range board.Columns {
+		tasksCursor, err := r.db.Collection("Tasks").Find(ctx, bson.M{"column_id": board.Columns[i].ID})
+		if err != nil {
+			return nil, err
+		}
+		defer tasksCursor.Close(ctx)
+		for tasksCursor.Next(ctx) {
+			var task models.Task	
+			if err := tasksCursor.Decode(&task); err != nil {
+				return nil, err
+			}
+			board.Columns[i].Tasks = append(board.Columns[i].Tasks, task)
+		}
+		if err := tasksCursor.Err(); err != nil {
+			return nil, err
+		}
+	}
+
 	return &board, nil
 }
 
@@ -94,9 +131,6 @@ func (r *boardRepository) UpdateBoard(ctx context.Context, id string, updates *B
 	if updates.Favorite != nil {
 		updateFields["favorite"] = *updates.Favorite
 	}
-	if updates.Columns_amount != nil {
-		updateFields["columns_amount"] = *updates.Columns_amount
-	}
 	if updates.Updated_at != nil {
 		updateFields["updated_at"] = *updates.Updated_at
 	}
@@ -115,6 +149,31 @@ func (r *boardRepository) UpdateBoard(ctx context.Context, id string, updates *B
 func (r *boardRepository) DeleteBoard(ctx context.Context, id string) error {
 	collection := r.db.Collection("Boards")
 	_, err := collection.DeleteOne(ctx, bson.M{"_id": id})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *boardRepository) IncrementColumnsAmount(ctx context.Context, id string) (string, error) {
+	collection := r.db.Collection("Boards")
+	update := bson.M{"$inc": bson.M{"columns_amount": 1}}
+	_, err := collection.UpdateOne(ctx, bson.M{"_id": id}, update)
+	if err != nil {
+		return "", err
+	}
+	var board models.Board
+	err = collection.FindOne(ctx, bson.M{"_id": id}).Decode(&board)
+	if err != nil {
+		return "", err
+	}
+	return board.ID.String(), nil
+}
+
+func (r *boardRepository) DecrementColumnsAmount(ctx context.Context, id string) error {
+	collection := r.db.Collection("Boards")
+	update := bson.M{"$inc": bson.M{"columns_amount": -1}}
+	_, err := collection.UpdateOne(ctx, bson.M{"_id": id}, update)
 	if err != nil {
 		return err
 	}
