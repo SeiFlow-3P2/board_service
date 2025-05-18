@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/SeiFlow-3P2/board_service/internal/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,8 +18,9 @@ type TaskRepository interface {
 }
 
 type TaskUpdates struct {
-	Title       *string `bson:"title,omitempty"`
-	Description *string `bson:"description,omitempty"`
+	Title       *string    `bson:"title,omitempty"`
+	Description *string    `bson:"description,omitempty"`
+	Deadline    *time.Time `bson:"deadline,omitempty"`
 }
 
 type taskRepository struct {
@@ -66,6 +68,9 @@ func (r *taskRepository) UpdateTask(ctx context.Context, id string, updates *Tas
 	}
 	if updates.Description != nil {
 		updateFields["description"] = *updates.Description
+	}
+	if updates.Deadline != nil {
+		updateFields["deadline"] = *updates.Deadline
 	}
 
 	if len(updateFields) == 0 {
