@@ -49,7 +49,7 @@ type DeleteColumnInput struct {
 
 func (s *ColumnService) CreateColumn(ctx context.Context, input CreateColumnInput) (*models.Column, error) {
 
-	existColumns, err := s.columnRepo.GetColumns(ctx, input.DeskID.String())
+	existColumns, err := s.columnRepo.GetColumns(ctx, input.DeskID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get columns: %w", err)
 	}
@@ -72,9 +72,9 @@ func (s *ColumnService) CreateColumn(ctx context.Context, input CreateColumnInpu
 		return nil, fmt.Errorf("failed to create column: %w", err)
 	}
 
-	_, err = s.boardRepo.IncrementColumnsAmount(ctx, input.DeskID.String())
+	_, err = s.boardRepo.IncrementColumnsAmount(ctx, input.DeskID)
 	if err != nil {
-		_ = s.columnRepo.DeleteColumn(ctx, column.ID.String())
+		_ = s.columnRepo.DeleteColumn(ctx, column.ID)
 		return nil, fmt.Errorf("failed to increment columns amount: %w", err)
 	}
 
@@ -83,7 +83,7 @@ func (s *ColumnService) CreateColumn(ctx context.Context, input CreateColumnInpu
 
 func (s *ColumnService) UpdateColumn(ctx context.Context, input UpdateColumnInput) (*models.Column, error) {
 
-	column, err := s.columnRepo.GetColumnInfo(ctx, input.ID.String())
+	column, err := s.columnRepo.GetColumnInfo(ctx, input.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +91,7 @@ func (s *ColumnService) UpdateColumn(ctx context.Context, input UpdateColumnInpu
 	updates := &repository.ColumnUpdates{}
 
 	if input.Name != nil {
-		existColumns, err := s.columnRepo.GetColumns(ctx, column.Desk_id.String())
+		existColumns, err := s.columnRepo.GetColumns(ctx, column.Desk_id)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get columns: %w", err)
 		}
@@ -104,7 +104,7 @@ func (s *ColumnService) UpdateColumn(ctx context.Context, input UpdateColumnInpu
 		updates.Name = input.Name
 	}
 
-	return s.columnRepo.UpdateColumn(ctx, input.ID.String(), updates)
+	return s.columnRepo.UpdateColumn(ctx, input.ID, updates)
 }
 
 func (s *ColumnService) DeleteColumn(ctx context.Context, input DeleteColumnInput) error {
@@ -116,12 +116,12 @@ func (s *ColumnService) DeleteColumn(ctx context.Context, input DeleteColumnInpu
 		return ErrEmptyDeskID
 	}
 
-	err := s.columnRepo.DeleteColumn(ctx, input.ID.String())
+	err := s.columnRepo.DeleteColumn(ctx, input.ID)
 	if err != nil {
 		return err
 	}
 
-	err = s.boardRepo.DecrementColumnsAmount(ctx, input.DeskID.String())
+	err = s.boardRepo.DecrementColumnsAmount(ctx, input.DeskID)
 	if err != nil {
 		return fmt.Errorf("failed to decrement columns amount: %w", err)
 	}

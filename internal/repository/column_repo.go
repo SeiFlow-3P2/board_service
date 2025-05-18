@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/SeiFlow-3P2/board_service/internal/models"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -11,10 +12,10 @@ import (
 
 type ColumnRepository interface {
 	CreateColumn(ctx context.Context, column *models.Column) (*models.Column, error)
-	GetColumnInfo(ctx context.Context, id string) (*models.Column, error)
-	GetColumns(ctx context.Context, boardID string) ([]*models.Column, error)
-	UpdateColumn(ctx context.Context, id string, updates *ColumnUpdates) (*models.Column, error)
-	DeleteColumn(ctx context.Context, id string) error
+	GetColumnInfo(ctx context.Context, id uuid.UUID) (*models.Column, error)
+	GetColumns(ctx context.Context, boardID uuid.UUID) ([]*models.Column, error)
+	UpdateColumn(ctx context.Context, id uuid.UUID, updates *ColumnUpdates) (*models.Column, error)
+	DeleteColumn(ctx context.Context, id uuid.UUID) error
 }
 
 type ColumnUpdates struct {
@@ -38,7 +39,7 @@ func (r *columnRepository) CreateColumn(ctx context.Context, column *models.Colu
 	return column, nil
 }
 
-func (r *columnRepository) GetColumnInfo(ctx context.Context, id string) (*models.Column, error) {
+func (r *columnRepository) GetColumnInfo(ctx context.Context, id uuid.UUID) (*models.Column, error) {
 	collection := r.db.Collection("Columns")
 	var column models.Column
 	err := collection.FindOne(ctx, bson.M{"_id": id}).Decode(&column)
@@ -48,7 +49,7 @@ func (r *columnRepository) GetColumnInfo(ctx context.Context, id string) (*model
 	return &column, nil
 }
 
-func (r *columnRepository) GetColumns(ctx context.Context, boardID string) ([]*models.Column, error) {
+func (r *columnRepository) GetColumns(ctx context.Context, boardID uuid.UUID) ([]*models.Column, error) {
 	collection := r.db.Collection("Columns")
 	var columns []*models.Column
 	options := options.Find().SetProjection(bson.M{"_id": 1, "name": 1, "order_number": 1})
@@ -70,7 +71,7 @@ func (r *columnRepository) GetColumns(ctx context.Context, boardID string) ([]*m
 	return columns, nil
 }
 
-func (r *columnRepository) UpdateColumn(ctx context.Context, id string, updates *ColumnUpdates) (*models.Column, error) {
+func (r *columnRepository) UpdateColumn(ctx context.Context, id uuid.UUID, updates *ColumnUpdates) (*models.Column, error) {
 	collection := r.db.Collection("Columns")
 
 	updateFields := bson.M{}
@@ -89,7 +90,7 @@ func (r *columnRepository) UpdateColumn(ctx context.Context, id string, updates 
 	return r.GetColumnInfo(ctx, id)
 }
 
-func (r *columnRepository) DeleteColumn(ctx context.Context, id string) error {
+func (r *columnRepository) DeleteColumn(ctx context.Context, id uuid.UUID) error {
 	collection := r.db.Collection("Columns")
 	_, err := collection.DeleteOne(ctx, bson.M{"_id": id})
 	if err != nil {

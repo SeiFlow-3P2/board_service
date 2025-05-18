@@ -74,7 +74,7 @@ func (s *TaskService) CreateTask(ctx context.Context, input CreateTaskInput) (*m
 
 func (s *TaskService) MoveTask(ctx context.Context, input MoveTaskInput) (*models.Task, error) {
 
-	_, err := s.taskRepo.GetTask(ctx, input.TaskID.String())
+	_, err := s.taskRepo.GetTask(ctx, input.TaskID)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, ErrTaskNotFound
@@ -82,17 +82,17 @@ func (s *TaskService) MoveTask(ctx context.Context, input MoveTaskInput) (*model
 		return nil, err
 	}
 
-	err = s.taskRepo.MoveTask(ctx, input.TaskID.String(), input.NewColumnID.String())
+	err = s.taskRepo.MoveTask(ctx, input.TaskID, input.NewColumnID)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.taskRepo.GetTask(ctx, input.TaskID.String())
+	return s.taskRepo.GetTask(ctx, input.TaskID)
 }
 
 func (s *TaskService) UpdateTask(ctx context.Context, input UpdateTaskInput) (*models.Task, error) {
 
-	_, err := s.taskRepo.GetTask(ctx, input.TaskID.String())
+	_, err := s.taskRepo.GetTask(ctx, input.TaskID)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, ErrTaskNotFound
@@ -106,12 +106,12 @@ func (s *TaskService) UpdateTask(ctx context.Context, input UpdateTaskInput) (*m
 		Deadline:    input.Deadline,
 	}
 
-	return s.taskRepo.UpdateTask(ctx, input.TaskID.String(), updates)
+	return s.taskRepo.UpdateTask(ctx, input.TaskID, updates)
 }
 
 func (s *TaskService) DeleteTask(ctx context.Context, input DeleteTaskInput) error {
 
-	err := s.taskRepo.DeleteTask(ctx, input.TaskID.String())
+	err := s.taskRepo.DeleteTask(ctx, input.TaskID)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return ErrTaskNotFound

@@ -5,16 +5,17 @@ import (
 	"time"
 
 	"github.com/SeiFlow-3P2/board_service/internal/models"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type TaskRepository interface {
 	CreateTask(ctx context.Context, task *models.Task) (*models.Task, error)
-	GetTask(ctx context.Context, id string) (*models.Task, error)
-	MoveTask(ctx context.Context, id string, newColumnID string) error
-	UpdateTask(ctx context.Context, id string, updates *TaskUpdates) (*models.Task, error)
-	DeleteTask(ctx context.Context, id string) error
+	GetTask(ctx context.Context, id uuid.UUID) (*models.Task, error)
+	MoveTask(ctx context.Context, id uuid.UUID, newColumnID uuid.UUID) error
+	UpdateTask(ctx context.Context, id uuid.UUID, updates *TaskUpdates) (*models.Task, error)
+	DeleteTask(ctx context.Context, id uuid.UUID) error
 }
 
 type TaskUpdates struct {
@@ -40,7 +41,7 @@ func (r *taskRepository) CreateTask(ctx context.Context, task *models.Task) (*mo
 	return task, nil
 }
 
-func (r *taskRepository) GetTask(ctx context.Context, id string) (*models.Task, error) {
+func (r *taskRepository) GetTask(ctx context.Context, id uuid.UUID) (*models.Task, error) {
 	collection := r.db.Collection("Tasks")
 	var task models.Task
 	err := collection.FindOne(ctx, bson.M{"_id": id}).Decode(&task)
@@ -50,7 +51,7 @@ func (r *taskRepository) GetTask(ctx context.Context, id string) (*models.Task, 
 	return &task, nil
 }
 
-func (r *taskRepository) MoveTask(ctx context.Context, id string, newColumnID string) error {
+func (r *taskRepository) MoveTask(ctx context.Context, id uuid.UUID, newColumnID uuid.UUID) error {
 	collection := r.db.Collection("Tasks")
 	_, err := collection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": bson.M{"column_id": newColumnID}})
 	if err != nil {
@@ -59,7 +60,7 @@ func (r *taskRepository) MoveTask(ctx context.Context, id string, newColumnID st
 	return nil
 }
 
-func (r *taskRepository) UpdateTask(ctx context.Context, id string, updates *TaskUpdates) (*models.Task, error) {
+func (r *taskRepository) UpdateTask(ctx context.Context, id uuid.UUID, updates *TaskUpdates) (*models.Task, error) {
 	collection := r.db.Collection("Tasks")
 
 	updateFields := bson.M{}
@@ -84,7 +85,7 @@ func (r *taskRepository) UpdateTask(ctx context.Context, id string, updates *Tas
 	return r.GetTask(ctx, id)
 }
 
-func (r *taskRepository) DeleteTask(ctx context.Context, id string) error {
+func (r *taskRepository) DeleteTask(ctx context.Context, id uuid.UUID) error {
 	collection := r.db.Collection("Tasks")
 	_, err := collection.DeleteOne(ctx, bson.M{"_id": id})
 	if err != nil {
