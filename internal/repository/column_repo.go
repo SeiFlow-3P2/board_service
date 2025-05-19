@@ -83,7 +83,7 @@ func (r *columnRepository) UpdateColumn(ctx context.Context, id uuid.UUID, updat
 		return r.GetColumnInfo(ctx, id)
 	}
 
-	_, err :=	collection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": updateFields})
+	_, err := collection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": updateFields})
 	if err != nil {
 		return nil, err
 	}

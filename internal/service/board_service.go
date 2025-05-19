@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	ErrBoardExists = errors.New("board already exists")
+	ErrBoardExists      = errors.New("board already exists")
 	ErrUserNotInContext = errors.New("user ID not found in context")
-	ErrBoardNotFound = errors.New("board not found")
+	ErrBoardNotFound    = errors.New("board not found")
 )
 
 type BoardService struct {
@@ -61,7 +61,7 @@ func (s *BoardService) CreateBoard(ctx context.Context, input CreateBoardInput) 
 
 	var columns []models.Column
 	columnsAmount := 0
-	
+
 	now := time.Now()
 	boardID := uuid.New()
 
@@ -70,37 +70,36 @@ func (s *BoardService) CreateBoard(ctx context.Context, input CreateBoardInput) 
 		columnsAmount = 3
 		columns = []models.Column{
 			{
-				ID: 				 uuid.New(),
-				Name: 			 "To Do",
+				ID:           uuid.New(),
+				Name:         "To Do",
 				Order_number: 1,
-				Desk_id: 		 boardID,
-				Tasks: 			 []models.Task{},
+				Desk_id:      boardID,
+				Tasks:        []models.Task{},
 			},
 			{
-				ID: 				 uuid.New(),
-				Name: 			 "In Progress",
+				ID:           uuid.New(),
+				Name:         "In Progress",
 				Order_number: 2,
-				Desk_id: 		 boardID,
-				Tasks: 			 []models.Task{},
+				Desk_id:      boardID,
+				Tasks:        []models.Task{},
 			},
 			{
-				ID: 				 uuid.New(),
-				Name: 			 "Done",
+				ID:           uuid.New(),
+				Name:         "Done",
 				Order_number: 3,
-				Desk_id: 		 boardID,
-				Tasks: 			 []models.Task{},
-					
+				Desk_id:      boardID,
+				Tasks:        []models.Task{},
 			},
 		}
 	case "simple":
 		columnsAmount = 1
 		columns = []models.Column{
 			{
-				ID: 				 uuid.New(),
-				Name: 			 "",
+				ID:           uuid.New(),
+				Name:         "",
 				Order_number: 1,
-				Desk_id: 		 boardID,
-				Tasks: 			 []models.Task{},
+				Desk_id:      boardID,
+				Tasks:        []models.Task{},
 			},
 		}
 	}

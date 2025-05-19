@@ -22,11 +22,11 @@ type BoardRepository interface {
 }
 
 type BoardUpdates struct {
-	Title       	 *string 					 `bson:"title,omitempty"`
-	Description 	 *string 					 `bson:"description,omitempty"`
-	Progress    	 *int    					 `bson:"progress,omitempty"`
-	Favorite    	 *bool	 					 `bson:"favorite,omitempty"`
-	Updated_at     *time.Time 			 `bson:"updated_at,omitempty"`
+	Title       *string    `bson:"title,omitempty"`
+	Description *string    `bson:"description,omitempty"`
+	Progress    *int       `bson:"progress,omitempty"`
+	Favorite    *bool      `bson:"favorite,omitempty"`
+	Updated_at  *time.Time `bson:"updated_at,omitempty"`
 }
 
 type boardRepository struct {
@@ -78,7 +78,7 @@ func (r *boardRepository) GetBoardInfo(ctx context.Context, id uuid.UUID) (*mode
 		}
 		defer tasksCursor.Close(ctx)
 		for tasksCursor.Next(ctx) {
-			var task models.Task	
+			var task models.Task
 			if err := tasksCursor.Decode(&task); err != nil {
 				return nil, err
 			}
@@ -95,9 +95,11 @@ func (r *boardRepository) GetBoardInfo(ctx context.Context, id uuid.UUID) (*mode
 func (r *boardRepository) GetBoards(ctx context.Context, userID string) ([]*models.Board, error) {
 	collection := r.db.Collection("Boards")
 	var boards []*models.Board
-	options := options.Find().SetProjection(bson.M{"_id": 1, "title": 1, "description": 1, "category": 1,
-																								 "progress": 1, "favorite": 1, "metodology": 1,
-																								 "columns_amount": 1, "created_at": 1, "updated_at": 1, "user_id": 1})
+	options := options.Find().SetProjection(bson.M{
+		"_id": 1, "title": 1, "description": 1, "category": 1,
+		"progress": 1, "favorite": 1, "metodology": 1,
+		"columns_amount": 1, "created_at": 1, "updated_at": 1, "user_id": 1,
+	})
 	cursor, err := collection.Find(ctx, bson.M{"user_id": userID}, options)
 	if err != nil {
 		return nil, err
@@ -148,55 +150,55 @@ func (r *boardRepository) UpdateBoard(ctx context.Context, id uuid.UUID, updates
 }
 
 func (r *boardRepository) DeleteBoard(ctx context.Context, id uuid.UUID) error {
-    session, err := r.db.Client().StartSession()
-    if err != nil {
-        return err
-    }
-    defer session.EndSession(ctx)
+	session, err := r.db.Client().StartSession()
+	if err != nil {
+		return err
+	}
+	defer session.EndSession(ctx)
 
-    err = mongo.WithSession(ctx, session, func(sc mongo.SessionContext) error {
-        if err := session.StartTransaction(); err != nil {
-            return err
-        }
-        columnsCollection := r.db.Collection("Columns")
-        cursor, err := columnsCollection.Find(sc, bson.M{"desk_id": id})
-        if err != nil {
-            return err
-        }
-        defer cursor.Close(sc)
+	err = mongo.WithSession(ctx, session, func(sc mongo.SessionContext) error {
+		if err := session.StartTransaction(); err != nil {
+			return err
+		}
+		columnsCollection := r.db.Collection("Columns")
+		cursor, err := columnsCollection.Find(sc, bson.M{"desk_id": id})
+		if err != nil {
+			return err
+		}
+		defer cursor.Close(sc)
 
-        tasksCollection := r.db.Collection("Tasks")
-        for cursor.Next(sc) {
-            var column models.Column
-            if err := cursor.Decode(&column); err != nil {
-                return err
-            }
-            _, err := tasksCollection.DeleteMany(sc, bson.M{"column_id": column.ID})
-            if err != nil {
-                return err
-            }
-        }
-        _, err = columnsCollection.DeleteMany(sc, bson.M{"desk_id": id})
-        if err != nil {
-            return err
-        }
-        boardsCollection := r.db.Collection("Boards")
-        _, err = boardsCollection.DeleteOne(sc, bson.M{"_id": id})
-        if err != nil {
-            return err
-        }
-        if err := session.CommitTransaction(sc); err != nil {
-            return err
-        }
-        return nil
-    })
-    if err != nil {
-        if abortErr := session.AbortTransaction(ctx); abortErr != nil {
-            return abortErr
-        }
-        return err
-    }
-    return nil
+		tasksCollection := r.db.Collection("Tasks")
+		for cursor.Next(sc) {
+			var column models.Column
+			if err := cursor.Decode(&column); err != nil {
+				return err
+			}
+			_, err := tasksCollection.DeleteMany(sc, bson.M{"column_id": column.ID})
+			if err != nil {
+				return err
+			}
+		}
+		_, err = columnsCollection.DeleteMany(sc, bson.M{"desk_id": id})
+		if err != nil {
+			return err
+		}
+		boardsCollection := r.db.Collection("Boards")
+		_, err = boardsCollection.DeleteOne(sc, bson.M{"_id": id})
+		if err != nil {
+			return err
+		}
+		if err := session.CommitTransaction(sc); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		if abortErr := session.AbortTransaction(ctx); abortErr != nil {
+			return abortErr
+		}
+		return err
+	}
+	return nil
 }
 
 func (r *boardRepository) IncrementColumnsAmount(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
