@@ -9,13 +9,13 @@ package board_v1;
 option go_package = "board_service/pkg/proto/board/v1;board_v1";
 
 service BoardService {
-    rpc CreateBoard(CreateBoardRequest) returns (BoardResponse) {
+    rpc CreateBoard(CreateBoardRequest) returns (GetBoardInfoResponse) {
         option (google.api.http) = {
             post: "/v1/boards"
             body: "*"
         };
     }
-    rpc GetBoards(GetBoardsRequest) returns (BoardResponse) {
+    rpc GetBoards(GetBoardsRequest) returns (BoardsListResponse) {
         option (google.api.http) = {
             get: "/v1/boards"
         };
@@ -25,7 +25,7 @@ service BoardService {
             get: "/v1/boards/{id}"
         };
     }
-    rpc UpdateBoard(UpdateBoardRequest) returns (BoardResponse) {
+    rpc UpdateBoard(UpdateBoardRequest) returns (GetBoardInfoResponse) {
         option (google.api.http) = {
             patch: "/v1/boards/{id}"
             body: "*"
@@ -94,6 +94,13 @@ message BoardResponse {
     string description = 3;
     string methodology = 4;
     string category = 5;
+    int64 progress = 6;
+    bool favorite = 7;
+    google.protobuf.Timestamp updated_at = 8;
+}
+
+message BoardsListResponse {
+    repeated BoardResponse boards = 1;
 }
 
 message GetBoardsRequest {}
@@ -125,7 +132,13 @@ message BoardInfo {
     string description = 3;
     string methodology = 4;
     string category = 5;
-    repeated ColumnInfo columns = 6;
+    int64 progress = 6;
+    bool favorite = 7;
+    google.protobuf.Timestamp updated_at = 8;
+    google.protobuf.Timestamp created_at = 9;    
+    int64 columns_amount = 10;
+    string user_id = 11;
+    repeated ColumnInfo columns = 12;
 }
 
 message GetBoardInfoResponse {
@@ -136,7 +149,8 @@ message UpdateBoardRequest {
     string id = 1;
     optional google.protobuf.StringValue name = 2;
     optional google.protobuf.StringValue description = 3;
-    optional google.protobuf.StringValue category = 4;
+    optional google.protobuf.Int32Value progress = 4;
+    optional google.protobuf.BoolValue favorite = 5;
 }
 
 message DeleteBoardRequest {

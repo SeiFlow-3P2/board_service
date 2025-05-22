@@ -98,7 +98,7 @@ func (r *boardRepository) GetBoards(ctx context.Context, userID string) ([]*mode
 	options := options.Find().SetProjection(bson.M{
 		"_id": 1, "title": 1, "description": 1, "category": 1,
 		"progress": 1, "favorite": 1, "metodology": 1,
-		"columns_amount": 1, "created_at": 1, "updated_at": 1, "user_id": 1,
+		"updated_at": 1, "user_id": 1,
 	})
 	cursor, err := collection.Find(ctx, bson.M{"user_id": userID}, options)
 	if err != nil {
