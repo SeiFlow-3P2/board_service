@@ -20,7 +20,7 @@ type BoardServiceHandler struct {
 }
 
 func NewBoardServiceHandler(boardService service.BoardService) *BoardServiceHandler {
-	return &BoardServiceHandler{ boardService: boardService, }
+	return &BoardServiceHandler{boardService: boardService}
 }
 
 func (h *BoardServiceHandler) boardToGetInfoResponse(board *models.Board) *pb.GetBoardInfoResponse {
@@ -39,28 +39,28 @@ func (h *BoardServiceHandler) boardToGetInfoResponse(board *models.Board) *pb.Ge
 		}
 
 		columns = append(columns, &pb.ColumnInfo{
-			Id:         col.ID.String(),
-			Name:       col.Name,
-			BoardId:    col.Desk_id.String(),
+			Id:          col.ID.String(),
+			Name:        col.Name,
+			BoardId:     col.Desk_id.String(),
 			OrderNumber: int64(col.Order_number),
-			Tasks:      tasks,
+			Tasks:       tasks,
 		})
 	}
 
 	return &pb.GetBoardInfoResponse{
 		Board: &pb.BoardInfo{
-			Id:           board.ID.String(),
-			Name:         board.Title,
-			Description:  board.Description,
-			Methodology:  board.Metodology,
-			Category:     board.Category,
-			Progress:     int64(board.Progress),
-			Favorite:     board.Favorite,
-			Updated_at:    timestamppb.New(board.Updated_at),
-			Created_at:    timestamppb.New(board.Created_at),
-			Columns_amount: int64(board.Columns_amount),
-			User_id:       board.User_id,
-			Columns:      columns,
+			Id:            board.ID.String(),
+			Name:          board.Title,
+			Description:   board.Description,
+			Methodology:   board.Metodology,
+			Category:      board.Category,
+			Progress:      int64(board.Progress),
+			Favorite:      board.Favorite,
+			UpdatedAt:     timestamppb.New(board.Updated_at),
+			CreatedAt:     timestamppb.New(board.Created_at),
+			ColumnsAmount: int64(board.Columns_amount),
+			UserId:        board.User_id,
+			Columns:       columns,
 		},
 	}
 }
@@ -125,18 +125,18 @@ func (h *BoardServiceHandler) GetBoards(ctx context.Context, req *pb.GetBoardsRe
 
 	for _, board := range boards {
 		pbBoard := &pb.BoardResponse{
-				Id:           board.ID.String(),
-				Name:         board.Title,
-				Description:  board.Description,
-				Methodology:  board.Metodology,
-				Category:     board.Category,
-				Progress:     board.Progress,
-				Favorite:     board.Favorite,
-				Updated_at:    timestamppb.New(board.Updated_at),
+			Id:          board.ID.String(),
+			Name:        board.Title,
+			Description: board.Description,
+			Methodology: board.Metodology,
+			Category:    board.Category,
+			Progress:    int64(board.Progress),
+			Favorite:    board.Favorite,
+			UpdatedAt:   timestamppb.New(board.Updated_at),
 		}
 		response.Boards = append(response.Boards, pbBoard)
 	}
-	
+
 	return response, nil
 }
 
@@ -147,16 +147,18 @@ func (h *BoardServiceHandler) UpdateBoard(ctx context.Context, req *pb.UpdateBoa
 	boardID, err := uuid.Parse(req.Id)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid board ID")
-	}	
+	}
 	if req.Name == nil && req.Description == nil && req.Progress == nil && req.Favorite == nil {
 		return nil, status.Error(codes.InvalidArgument, "at least one field is required")
 	}
+
+	progress := int(req.Progress.Value)
 
 	updates := service.UpdateBoardInput{
 		ID:          boardID,
 		Title:       &req.Name.Value,
 		Description: &req.Description.Value,
-		Progress:    &req.Progress.Value,
+		Progress:    &progress,
 		Favorite:    &req.Favorite.Value,
 	}
 
@@ -167,7 +169,7 @@ func (h *BoardServiceHandler) UpdateBoard(ctx context.Context, req *pb.UpdateBoa
 		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	
+
 	return h.boardToGetInfoResponse(board), nil
 }
 
