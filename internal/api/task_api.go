@@ -14,10 +14,10 @@ import (
 )
 
 type TaskServiceHandler struct {
-	taskService service.TaskService
+	taskService *service.TaskService
 }
 
-func NewTaskServiceHandler(taskService service.TaskService) *TaskServiceHandler {
+func NewTaskServiceHandler(taskService *service.TaskService) *TaskServiceHandler {
 	return &TaskServiceHandler{taskService: taskService}
 }
 
@@ -64,7 +64,7 @@ func (h *TaskServiceHandler) CreateTask(ctx context.Context, req *pb.CreateTaskR
 	}, nil
 }
 
-func (h *TaskServiceHandler) MoveTask(ctx context.Context, req *pb.MoveTaskRequest) (*pb.TaskResponse, error) {
+func (h *TaskServiceHandler) MoveTask(ctx context.Context, req *pb.MoveTaskRequest) (*pb.MoveTaskResponse, error) {
 	if req.TaskId == "" {
 		return nil, status.Error(codes.InvalidArgument, "task ID is required")
 	}
@@ -90,13 +90,9 @@ func (h *TaskServiceHandler) MoveTask(ctx context.Context, req *pb.MoveTaskReque
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	return &pb.TaskResponse{
-		Id:          task.ID.String(),
-		Name:        task.Title,
-		Description: task.Description,
-		Deadline:    task.Deadline.Format(time.RFC3339),
-		InCalendar:  task.In_Calendar,
-		ColumnId:    task.Column_id.String(),
+	return &pb.MoveTaskResponse{
+		TaskId:      task.ID.String(),
+		NewColumnId: newColumnID.String(),
 	}, nil
 }
 

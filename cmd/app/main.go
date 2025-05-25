@@ -3,9 +3,6 @@ package main
 import (
 	"context"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/SeiFlow-3P2/board_service/internal/app"
@@ -21,26 +18,9 @@ func main() {
 		MongoDB:      "board_service",
 	}
 
-	application := app.New(cfg)
+	app := app.New(cfg)
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-
-	go func() {
-		if err := application.Start(); err != nil {
-			log.Printf("Error starting server: %v\n", err)
-			stop()
-		}
-	}()
-
-	<-ctx.Done()
-
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	if err := application.Shutdown(shutdownCtx); err != nil {
-		log.Printf("Error during server shutdown: %v\n", err)
+	if err := app.Start(context.Background()); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
 	}
-
-	log.Println("Server stopped")
 }

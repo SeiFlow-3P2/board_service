@@ -12,10 +12,10 @@ import (
 )
 
 type ColumnServiceHandler struct {
-	columnService service.ColumnService
+	columnService *service.ColumnService
 }
 
-func NewColumnServiceHandler(columnService service.ColumnService) *ColumnServiceHandler {
+func NewColumnServiceHandler(columnService *service.ColumnService) *ColumnServiceHandler {
 	return &ColumnServiceHandler{columnService: columnService}
 }
 

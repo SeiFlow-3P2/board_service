@@ -16,10 +16,10 @@ import (
 )
 
 type BoardServiceHandler struct {
-	boardService service.BoardService
+	boardService *service.BoardService
 }
 
-func NewBoardServiceHandler(boardService service.BoardService) *BoardServiceHandler {
+func NewBoardServiceHandler(boardService *service.BoardService) *BoardServiceHandler {
 	return &BoardServiceHandler{boardService: boardService}
 }
 
