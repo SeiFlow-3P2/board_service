@@ -38,10 +38,10 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type BoardServiceClient interface {
-	CreateBoard(ctx context.Context, in *CreateBoardRequest, opts ...grpc.CallOption) (*BoardResponse, error)
-	GetBoards(ctx context.Context, in *GetBoardsRequest, opts ...grpc.CallOption) (*BoardResponse, error)
+	CreateBoard(ctx context.Context, in *CreateBoardRequest, opts ...grpc.CallOption) (*GetBoardInfoResponse, error)
+	GetBoards(ctx context.Context, in *GetBoardsRequest, opts ...grpc.CallOption) (*BoardsListResponse, error)
 	GetBoardInfo(ctx context.Context, in *GetBoardInfoRequest, opts ...grpc.CallOption) (*GetBoardInfoResponse, error)
-	UpdateBoard(ctx context.Context, in *UpdateBoardRequest, opts ...grpc.CallOption) (*BoardResponse, error)
+	UpdateBoard(ctx context.Context, in *UpdateBoardRequest, opts ...grpc.CallOption) (*GetBoardInfoResponse, error)
 	DeleteBoard(ctx context.Context, in *DeleteBoardRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	CreateColumn(ctx context.Context, in *CreateColumnRequest, opts ...grpc.CallOption) (*ColumnResponse, error)
 	UpdateColumn(ctx context.Context, in *UpdateColumnRequest, opts ...grpc.CallOption) (*ColumnResponse, error)
@@ -60,9 +60,9 @@ func NewBoardServiceClient(cc grpc.ClientConnInterface) BoardServiceClient {
 	return &boardServiceClient{cc}
 }
 
-func (c *boardServiceClient) CreateBoard(ctx context.Context, in *CreateBoardRequest, opts ...grpc.CallOption) (*BoardResponse, error) {
+func (c *boardServiceClient) CreateBoard(ctx context.Context, in *CreateBoardRequest, opts ...grpc.CallOption) (*GetBoardInfoResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(BoardResponse)
+	out := new(GetBoardInfoResponse)
 	err := c.cc.Invoke(ctx, BoardService_CreateBoard_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -70,9 +70,9 @@ func (c *boardServiceClient) CreateBoard(ctx context.Context, in *CreateBoardReq
 	return out, nil
 }
 
-func (c *boardServiceClient) GetBoards(ctx context.Context, in *GetBoardsRequest, opts ...grpc.CallOption) (*BoardResponse, error) {
+func (c *boardServiceClient) GetBoards(ctx context.Context, in *GetBoardsRequest, opts ...grpc.CallOption) (*BoardsListResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(BoardResponse)
+	out := new(BoardsListResponse)
 	err := c.cc.Invoke(ctx, BoardService_GetBoards_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -90,9 +90,9 @@ func (c *boardServiceClient) GetBoardInfo(ctx context.Context, in *GetBoardInfoR
 	return out, nil
 }
 
-func (c *boardServiceClient) UpdateBoard(ctx context.Context, in *UpdateBoardRequest, opts ...grpc.CallOption) (*BoardResponse, error) {
+func (c *boardServiceClient) UpdateBoard(ctx context.Context, in *UpdateBoardRequest, opts ...grpc.CallOption) (*GetBoardInfoResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(BoardResponse)
+	out := new(GetBoardInfoResponse)
 	err := c.cc.Invoke(ctx, BoardService_UpdateBoard_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -184,10 +184,10 @@ func (c *boardServiceClient) DeleteTask(ctx context.Context, in *DeleteTaskReque
 // All implementations must embed UnimplementedBoardServiceServer
 // for forward compatibility.
 type BoardServiceServer interface {
-	CreateBoard(context.Context, *CreateBoardRequest) (*BoardResponse, error)
-	GetBoards(context.Context, *GetBoardsRequest) (*BoardResponse, error)
+	CreateBoard(context.Context, *CreateBoardRequest) (*GetBoardInfoResponse, error)
+	GetBoards(context.Context, *GetBoardsRequest) (*BoardsListResponse, error)
 	GetBoardInfo(context.Context, *GetBoardInfoRequest) (*GetBoardInfoResponse, error)
-	UpdateBoard(context.Context, *UpdateBoardRequest) (*BoardResponse, error)
+	UpdateBoard(context.Context, *UpdateBoardRequest) (*GetBoardInfoResponse, error)
 	DeleteBoard(context.Context, *DeleteBoardRequest) (*emptypb.Empty, error)
 	CreateColumn(context.Context, *CreateColumnRequest) (*ColumnResponse, error)
 	UpdateColumn(context.Context, *UpdateColumnRequest) (*ColumnResponse, error)
@@ -206,16 +206,16 @@ type BoardServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedBoardServiceServer struct{}
 
-func (UnimplementedBoardServiceServer) CreateBoard(context.Context, *CreateBoardRequest) (*BoardResponse, error) {
+func (UnimplementedBoardServiceServer) CreateBoard(context.Context, *CreateBoardRequest) (*GetBoardInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateBoard not implemented")
 }
-func (UnimplementedBoardServiceServer) GetBoards(context.Context, *GetBoardsRequest) (*BoardResponse, error) {
+func (UnimplementedBoardServiceServer) GetBoards(context.Context, *GetBoardsRequest) (*BoardsListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBoards not implemented")
 }
 func (UnimplementedBoardServiceServer) GetBoardInfo(context.Context, *GetBoardInfoRequest) (*GetBoardInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBoardInfo not implemented")
 }
-func (UnimplementedBoardServiceServer) UpdateBoard(context.Context, *UpdateBoardRequest) (*BoardResponse, error) {
+func (UnimplementedBoardServiceServer) UpdateBoard(context.Context, *UpdateBoardRequest) (*GetBoardInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateBoard not implemented")
 }
 func (UnimplementedBoardServiceServer) DeleteBoard(context.Context, *DeleteBoardRequest) (*emptypb.Empty, error) {
