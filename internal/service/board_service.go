@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/SeiFlow-3P2/board_service/internal/interceptor"
 	"github.com/SeiFlow-3P2/board_service/internal/models"
 	"github.com/SeiFlow-3P2/board_service/internal/repository"
 	"github.com/google/uuid"
@@ -44,7 +45,7 @@ type UpdateBoardInput struct {
 }
 
 func (s *BoardService) CreateBoard(ctx context.Context, input CreateBoardInput) (*models.Board, error) {
-	userID, ok := ctx.Value("userID").(string)
+	userID, ok := ctx.Value(interceptor.UserIDKey).(string)
 	if !ok {
 		return nil, ErrUserNotInContext
 	}
@@ -138,7 +139,7 @@ func (s *BoardService) GetBoardInfo(ctx context.Context, id uuid.UUID) (*models.
 }
 
 func (s *BoardService) GetBoards(ctx context.Context) ([]*models.Board, error) {
-	userID, ok := ctx.Value("userID").(string)
+	userID, ok := ctx.Value(interceptor.UserIDKey).(string)
 	if !ok {
 		return nil, ErrUserNotInContext
 	}
