@@ -41,6 +41,7 @@ service BoardService {
     rpc CreateColumn(CreateColumnRequest) returns (ColumnResponse) {
         option (google.api.http) = {
             post: "/v1/boards/{board_id}/columns"
+            body: "*"
         };
     }
     rpc UpdateColumn(UpdateColumnRequest) returns (ColumnResponse) {

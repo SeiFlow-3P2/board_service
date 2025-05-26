@@ -152,14 +152,33 @@ func (h *BoardServiceHandler) UpdateBoard(ctx context.Context, req *pb.UpdateBoa
 		return nil, status.Error(codes.InvalidArgument, "at least one field is required")
 	}
 
-	progress := int(req.Progress.Value)
+	var title *string
+	if req.Name != nil {
+		title = &req.Name.Value
+	}
+
+	var description *string
+	if req.Description != nil {
+		description = &req.Description.Value
+	}
+
+	var progress *int
+	if req.Progress != nil {
+		pbProgress := int(req.Progress.Value)
+		progress = &pbProgress
+	}
+
+	var favorite *bool
+	if req.Favorite != nil {
+		favorite = &req.Favorite.Value
+	}
 
 	updates := service.UpdateBoardInput{
 		ID:          boardID,
-		Title:       &req.Name.Value,
-		Description: &req.Description.Value,
-		Progress:    &progress,
-		Favorite:    &req.Favorite.Value,
+		Title:       title,
+		Description: description,
+		Progress:    progress,
+		Favorite:    favorite,
 	}
 
 	board, err := h.boardService.UpdateBoard(ctx, updates)

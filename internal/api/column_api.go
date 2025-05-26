@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/SeiFlow-3P2/board_service/internal/service"
 	pb "github.com/SeiFlow-3P2/board_service/pkg/proto/v1"
@@ -20,6 +21,7 @@ func NewColumnServiceHandler(columnService *service.ColumnService) *ColumnServic
 }
 
 func (h *ColumnServiceHandler) CreateColumn(ctx context.Context, req *pb.CreateColumnRequest) (*pb.ColumnResponse, error) {
+	fmt.Println("CreateColumnRequest", req)
 	if req.Name == "" {
 		return nil, status.Error(codes.InvalidArgument, "name is required")
 	}
