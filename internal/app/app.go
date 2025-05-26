@@ -12,6 +12,7 @@ import (
 
 	"github.com/SeiFlow-3P2/board_service/internal/api"
 	"github.com/SeiFlow-3P2/board_service/internal/config"
+	"github.com/SeiFlow-3P2/board_service/internal/interceptor"
 	"github.com/SeiFlow-3P2/board_service/internal/repository"
 	"github.com/SeiFlow-3P2/board_service/internal/service"
 	pb "github.com/SeiFlow-3P2/board_service/pkg/proto/v1"
@@ -60,7 +61,9 @@ func (a *App) Start(ctx context.Context) error {
 
 	handler := api.NewHandler(boardServiceHandler, columnServiceHandler, taskServiceHandler)
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(interceptor.AuthUnaryServerInterceptor()),
+	)
 
 	pb.RegisterBoardServiceServer(grpcServer, handler)
 

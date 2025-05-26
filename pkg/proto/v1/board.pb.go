@@ -1469,7 +1469,7 @@ const file_board_proto_rawDesc = "" +
 	"\x05_nameB\x0e\n" +
 	"\f_description\"#\n" +
 	"\x11DeleteTaskRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id2\xc7\t\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id2\xca\t\n" +
 	"\fBoardService\x12b\n" +
 	"\vCreateBoard\x12\x1c.board_v1.CreateBoardRequest\x1a\x1e.board_v1.GetBoardInfoResponse\"\x15\x82\xd3\xe4\x93\x02\x0f:\x01*\"\n" +
 	"/v1/boards\x12Y\n" +
@@ -1477,8 +1477,8 @@ const file_board_proto_rawDesc = "" +
 	"/v1/boards\x12f\n" +
 	"\fGetBoardInfo\x12\x1d.board_v1.GetBoardInfoRequest\x1a\x1e.board_v1.GetBoardInfoResponse\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/v1/boards/{id}\x12g\n" +
 	"\vUpdateBoard\x12\x1c.board_v1.UpdateBoardRequest\x1a\x1e.board_v1.GetBoardInfoResponse\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*2\x0f/v1/boards/{id}\x12\\\n" +
-	"\vDeleteBoard\x12\x1c.board_v1.DeleteBoardRequest\x1a\x16.google.protobuf.Empty\"\x17\x82\xd3\xe4\x93\x02\x11*\x0f/v1/boards/{id}\x12n\n" +
-	"\fCreateColumn\x12\x1d.board_v1.CreateColumnRequest\x1a\x18.board_v1.ColumnResponse\"%\x82\xd3\xe4\x93\x02\x1f\"\x1d/v1/boards/{board_id}/columns\x12d\n" +
+	"\vDeleteBoard\x12\x1c.board_v1.DeleteBoardRequest\x1a\x16.google.protobuf.Empty\"\x17\x82\xd3\xe4\x93\x02\x11*\x0f/v1/boards/{id}\x12q\n" +
+	"\fCreateColumn\x12\x1d.board_v1.CreateColumnRequest\x1a\x18.board_v1.ColumnResponse\"(\x82\xd3\xe4\x93\x02\":\x01*\"\x1d/v1/boards/{board_id}/columns\x12d\n" +
 	"\fUpdateColumn\x12\x1d.board_v1.UpdateColumnRequest\x1a\x18.board_v1.ColumnResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*2\x10/v1/columns/{id}\x12_\n" +
 	"\fDeleteColumn\x12\x1d.board_v1.DeleteColumnRequest\x1a\x16.google.protobuf.Empty\"\x18\x82\xd3\xe4\x93\x02\x12*\x10/v1/columns/{id}\x12k\n" +
 	"\n" +
