@@ -9,6 +9,8 @@ require (
 	google.golang.org/protobuf v1.36.5
 )
 
+require github.com/joho/godotenv v1.5.1 // indirect
+
 require (
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect

@@ -6,16 +6,19 @@ import (
 	"time"
 
 	"github.com/SeiFlow-3P2/board_service/internal/app"
+	"github.com/SeiFlow-3P2/board_service/internal/config"
 )
 
 func main() {
+	config.LoadEnv()
+
 	cfg := &app.Config{
-		Port:         "8080",
+		Port:         "9090",
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
-		MongoURI:     "mongodb://localhost:27017",
-		MongoDB:      "board_service",
+		MongoURI:     config.GetMongoURI(),
+		MongoDB:      config.GetMongoDB(),
 	}
 
 	app := app.New(cfg)
