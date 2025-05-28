@@ -36,7 +36,14 @@ func (h *ColumnServiceHandler) CreateColumn(ctx context.Context, req *pb.CreateC
 		DeskID: boardID,
 	})
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		switch {
+		case err.Error() == "board not found":
+			return nil, status.Error(codes.NotFound, "board not found")
+		case err.Error() == service.ErrColumnExists.Error():
+			return nil, status.Error(codes.AlreadyExists, "column with this name already exists")
+		default:
+			return nil, status.Error(codes.Internal, err.Error())
+		}
 	}
 
 	return &pb.ColumnResponse{
@@ -63,7 +70,14 @@ func (h *ColumnServiceHandler) UpdateColumn(ctx context.Context, req *pb.UpdateC
 		OrderNumber: nil,
 	})
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		switch {
+		case err.Error() == "column not found":
+			return nil, status.Error(codes.NotFound, "column not found")
+		case err.Error() == service.ErrColumnExists.Error():
+			return nil, status.Error(codes.AlreadyExists, "column with this name already exists")
+		default:
+			return nil, status.Error(codes.Internal, err.Error())
+		}
 	}
 
 	return &pb.ColumnResponse{
@@ -84,7 +98,12 @@ func (h *ColumnServiceHandler) DeleteColumn(ctx context.Context, req *pb.DeleteC
 		ID: columnID,
 	})
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		switch {
+		case err.Error() == "column not found":
+			return nil, status.Error(codes.NotFound, "column not found")
+		default:
+			return nil, status.Error(codes.Internal, err.Error())
+		}
 	}
 
 	return &emptypb.Empty{}, nil

@@ -17,7 +17,7 @@ type BoardRepository interface {
 	GetBoards(ctx context.Context, userID string) ([]*models.Board, error)
 	UpdateBoard(ctx context.Context, id uuid.UUID, updates *BoardUpdates) (*models.Board, error)
 	DeleteBoard(ctx context.Context, id uuid.UUID) error
-	IncrementColumnsAmount(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	IncrementColumnsAmount(ctx context.Context, id uuid.UUID) (int, error)
 	DecrementColumnsAmount(ctx context.Context, id uuid.UUID) error
 }
 
@@ -201,19 +201,19 @@ func (r *boardRepository) DeleteBoard(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (r *boardRepository) IncrementColumnsAmount(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+func (r *boardRepository) IncrementColumnsAmount(ctx context.Context, id uuid.UUID) (int, error) {
 	collection := r.db.Collection("Boards")
 	update := bson.M{"$inc": bson.M{"columns_amount": 1}}
 	_, err := collection.UpdateOne(ctx, bson.M{"_id": id}, update)
 	if err != nil {
-		return uuid.Nil, err
+		return 0, err
 	}
 	var board models.Board
 	err = collection.FindOne(ctx, bson.M{"_id": id}).Decode(&board)
 	if err != nil {
-		return uuid.Nil, err
+		return 0, err
 	}
-	return board.ID, nil
+	return board.Columns_amount, nil
 }
 
 func (r *boardRepository) DecrementColumnsAmount(ctx context.Context, id uuid.UUID) error {

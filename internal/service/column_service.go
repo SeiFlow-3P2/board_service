@@ -9,6 +9,7 @@ import (
 	"github.com/SeiFlow-3P2/board_service/internal/models"
 	"github.com/SeiFlow-3P2/board_service/internal/repository"
 	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var (
@@ -48,6 +49,13 @@ type DeleteColumnInput struct {
 }
 
 func (s *ColumnService) CreateColumn(ctx context.Context, input CreateColumnInput) (*models.Column, error) {
+	_, err := s.boardRepo.GetBoardInfo(ctx, input.DeskID)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("board not found")
+		}
+		return nil, fmt.Errorf("failed to get board: %w", err)
+	}
 
 	existColumns, err := s.columnRepo.GetColumns(ctx, input.DeskID)
 	if err != nil {
@@ -60,22 +68,22 @@ func (s *ColumnService) CreateColumn(ctx context.Context, input CreateColumnInpu
 		}
 	}
 
+	newOrderNumber, err := s.boardRepo.IncrementColumnsAmount(ctx, input.DeskID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to increment columns amount: %w", err)
+	}
+
 	column := &models.Column{
 		ID:           uuid.New(),
 		Name:         input.Name,
 		Desk_id:      input.DeskID,
-		Order_number: input.OrderNumber,
+		Order_number: newOrderNumber,
 	}
 
 	column, err = s.columnRepo.CreateColumn(ctx, column)
 	if err != nil {
+		_ = s.boardRepo.DecrementColumnsAmount(ctx, input.DeskID)
 		return nil, fmt.Errorf("failed to create column: %w", err)
-	}
-
-	_, err = s.boardRepo.IncrementColumnsAmount(ctx, input.DeskID)
-	if err != nil {
-		_ = s.columnRepo.DeleteColumn(ctx, column.ID)
-		return nil, fmt.Errorf("failed to increment columns amount: %w", err)
 	}
 
 	return column, nil
@@ -112,16 +120,25 @@ func (s *ColumnService) DeleteColumn(ctx context.Context, input DeleteColumnInpu
 		return ErrEmptyID
 	}
 
-	if input.DeskID == uuid.Nil {
-		return ErrEmptyDeskID
-	}
-
-	err := s.columnRepo.DeleteColumn(ctx, input.ID)
+	column, err := s.columnRepo.GetColumnInfo(ctx, input.ID)
 	if err != nil {
-		return err
+		if err == mongo.ErrNoDocuments {
+			return fmt.Errorf("column not found")
+		}
+		return fmt.Errorf("failed to get column info: %w", err)
 	}
 
-	err = s.boardRepo.DecrementColumnsAmount(ctx, input.DeskID)
+	err = s.columnRepo.DeleteColumn(ctx, input.ID)
+	if err != nil {
+		return fmt.Errorf("failed to delete column: %w", err)
+	}
+
+	err = s.columnRepo.DecrementOrderNumbers(ctx, column.Desk_id, column.Order_number)
+	if err != nil {
+		return fmt.Errorf("failed to decrement order numbers: %w", err)
+	}
+
+	err = s.boardRepo.DecrementColumnsAmount(ctx, column.Desk_id)
 	if err != nil {
 		return fmt.Errorf("failed to decrement columns amount: %w", err)
 	}

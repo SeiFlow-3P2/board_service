@@ -16,6 +16,7 @@ type ColumnRepository interface {
 	GetColumns(ctx context.Context, boardID uuid.UUID) ([]*models.Column, error)
 	UpdateColumn(ctx context.Context, id uuid.UUID, updates *ColumnUpdates) (*models.Column, error)
 	DeleteColumn(ctx context.Context, id uuid.UUID) error
+	DecrementOrderNumbers(ctx context.Context, boardID uuid.UUID, orderNumber int) error
 }
 
 type ColumnUpdates struct {
@@ -97,4 +98,14 @@ func (r *columnRepository) DeleteColumn(ctx context.Context, id uuid.UUID) error
 		return err
 	}
 	return nil
+}
+
+func (r *columnRepository) DecrementOrderNumbers(ctx context.Context, boardID uuid.UUID, orderNumber int) error {
+	collection := r.db.Collection("Columns")
+	update := bson.M{"$inc": bson.M{"order_number": -1}}
+	_, err := collection.UpdateMany(ctx, bson.M{
+		"desk_id":      boardID,
+		"order_number": bson.M{"$gt": orderNumber},
+	}, update)
+	return err
 }
