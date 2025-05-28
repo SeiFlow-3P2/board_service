@@ -84,10 +84,14 @@ func (h *TaskServiceHandler) MoveTask(ctx context.Context, req *pb.MoveTaskReque
 		NewColumnID: newColumnID,
 	})
 	if err != nil {
-		if err == service.ErrTaskNotFound {
+		switch {
+		case err == service.ErrTaskNotFound:
 			return nil, status.Error(codes.NotFound, "task not found")
+		case err.Error() == "new column not found":
+			return nil, status.Error(codes.NotFound, "new column not found")
+		default:
+			return nil, status.Error(codes.Internal, err.Error())
 		}
-		return nil, status.Error(codes.Internal, err.Error())
 	}
 
 	return &pb.MoveTaskResponse{

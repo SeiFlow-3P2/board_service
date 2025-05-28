@@ -53,7 +53,7 @@ func (a *App) Start(ctx context.Context) error {
 
 	boardService := service.NewBoardService(boardRepo)
 	columnService := service.NewColumnService(columnRepo, boardRepo)
-	taskService := service.NewTaskService(taskRepo)
+	taskService := service.NewTaskService(taskRepo, columnRepo)
 
 	boardServiceHandler := api.NewBoardServiceHandler(boardService)
 	columnServiceHandler := api.NewColumnServiceHandler(columnService)

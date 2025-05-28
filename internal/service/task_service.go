@@ -12,20 +12,24 @@ import (
 )
 
 var (
-	ErrEmptyTitle       = errors.New("task title cannot be empty")
-	ErrEmptyDescription = errors.New("task description cannot be empty")
-	ErrInvalidDeadline  = errors.New("task deadline must be in the future")
-	ErrEmptyID          = errors.New("ID cannot be empty")
-	ErrTaskNotFound     = errors.New("task not found")
+	ErrEmptyTitle        = errors.New("task title cannot be empty")
+	ErrEmptyDescription  = errors.New("task description cannot be empty")
+	ErrInvalidDeadline   = errors.New("task deadline must be in the future")
+	ErrEmptyID           = errors.New("ID cannot be empty")
+	ErrTaskNotFound      = errors.New("task not found")
+	ErrNewColumnNotFound = errors.New("new column not found")
+	ErrGetColumnInfo     = errors.New("failed to get column info")
 )
 
 type TaskService struct {
-	taskRepo repository.TaskRepository
+	taskRepo   repository.TaskRepository
+	columnRepo repository.ColumnRepository
 }
 
-func NewTaskService(taskRepo repository.TaskRepository) *TaskService {
+func NewTaskService(taskRepo repository.TaskRepository, columnRepo repository.ColumnRepository) *TaskService {
 	return &TaskService{
-		taskRepo: taskRepo,
+		taskRepo:   taskRepo,
+		columnRepo: columnRepo,
 	}
 }
 
@@ -80,6 +84,14 @@ func (s *TaskService) MoveTask(ctx context.Context, input MoveTaskInput) (*model
 			return nil, ErrTaskNotFound
 		}
 		return nil, err
+	}
+
+	_, err = s.columnRepo.GetColumnInfo(ctx, input.NewColumnID)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, ErrNewColumnNotFound
+		}
+		return nil, ErrGetColumnInfo
 	}
 
 	err = s.taskRepo.MoveTask(ctx, input.TaskID, input.NewColumnID)
