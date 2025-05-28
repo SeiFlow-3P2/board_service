@@ -73,10 +73,14 @@ func (h *BoardServiceHandler) CreateBoard(ctx context.Context, req *pb.CreateBoa
 		return nil, status.Error(codes.InvalidArgument, "description is required")
 	}
 	if req.Methodology == "" {
-		return nil, status.Error(codes.InvalidArgument, "metodology is required")
+		return nil, status.Error(codes.InvalidArgument, "methodology is required")
 	}
 	if req.Category == "" {
 		return nil, status.Error(codes.InvalidArgument, "category is required")
+	}
+
+	if req.Methodology != "kanban" && req.Methodology != "simple" {
+		return nil, status.Error(codes.InvalidArgument, "methotodology must be kanban or simple")
 	}
 
 	board, err := h.boardService.CreateBoard(ctx, service.CreateBoardInput{
@@ -86,9 +90,14 @@ func (h *BoardServiceHandler) CreateBoard(ctx context.Context, req *pb.CreateBoa
 		Category:    req.Category,
 	})
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
+		switch {
+		case err == service.ErrUserNotInContext:
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		case err == service.ErrBoardExists:
+			return nil, status.Error(codes.NotFound, err.Error())
+		default:
+			return nil, status.Error(codes.Internal, err.Error())
+	}}
 	return h.boardToGetInfoResponse(board), nil
 }
 
@@ -116,6 +125,9 @@ func (h *BoardServiceHandler) GetBoardInfo(ctx context.Context, req *pb.GetBoard
 func (h *BoardServiceHandler) GetBoards(ctx context.Context, req *pb.GetBoardsRequest) (*pb.BoardsListResponse, error) {
 	boards, err := h.boardService.GetBoards(ctx)
 	if err != nil {
+		if err == service.ErrUserNotInContext {
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
@@ -200,6 +212,9 @@ func (h *BoardServiceHandler) DeleteBoard(ctx context.Context, req *pb.DeleteBoa
 
 	err = h.boardService.DeleteBoard(ctx, boardID)
 	if err != nil {
+		if err == service.ErrBoardNotFound {
+			return nil, status.Error(codes.NotFound, "board not found")
+		}
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
