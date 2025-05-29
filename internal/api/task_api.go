@@ -49,6 +49,7 @@ func (h *TaskServiceHandler) CreateTask(ctx context.Context, req *pb.CreateTaskR
 		Description: req.Description,
 		ColumnID:    columnID,
 		Deadline:    &deadline,
+		InCalendar:  req.InCalendar,
 	})
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())

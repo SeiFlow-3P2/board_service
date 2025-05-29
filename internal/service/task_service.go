@@ -2,11 +2,16 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"log"
 	"time"
 
+	"github.com/SeiFlow-3P2/board_service/internal/interceptor"
 	"github.com/SeiFlow-3P2/board_service/internal/models"
 	"github.com/SeiFlow-3P2/board_service/internal/repository"
+	"github.com/SeiFlow-3P2/shared/kafka"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -24,12 +29,18 @@ var (
 type TaskService struct {
 	taskRepo   repository.TaskRepository
 	columnRepo repository.ColumnRepository
+	producer   *kafka.Producer
 }
 
-func NewTaskService(taskRepo repository.TaskRepository, columnRepo repository.ColumnRepository) *TaskService {
+func NewTaskService(
+	taskRepo repository.TaskRepository,
+	columnRepo repository.ColumnRepository,
+	producer *kafka.Producer,
+) *TaskService {
 	return &TaskService{
 		taskRepo:   taskRepo,
 		columnRepo: columnRepo,
+		producer:   producer,
 	}
 }
 
@@ -38,6 +49,7 @@ type CreateTaskInput struct {
 	Description string
 	Deadline    *time.Time
 	ColumnID    uuid.UUID
+	InCalendar  bool
 }
 
 type MoveTaskInput struct {
@@ -57,6 +69,10 @@ type DeleteTaskInput struct {
 }
 
 func (s *TaskService) CreateTask(ctx context.Context, input CreateTaskInput) (*models.Task, error) {
+	userID, ok := ctx.Value(interceptor.UserIDKey).(string)
+	if !ok {
+		return nil, ErrUserNotInContext
+	}
 
 	task := &models.Task{
 		ID:          uuid.New(),
@@ -64,15 +80,45 @@ func (s *TaskService) CreateTask(ctx context.Context, input CreateTaskInput) (*m
 		Description: input.Description,
 		Deadline:    *input.Deadline,
 		Column_id:   input.ColumnID,
-		In_Calendar: false,
+		In_Calendar: input.InCalendar,
 	}
 
 	task, err := s.taskRepo.CreateTask(ctx, task)
-
 	if err != nil {
 		return nil, err
 	}
 
+	if input.InCalendar {
+		go func() {
+			msg := models.BoardEvent{
+				EventType:   "create",
+				Title:       task.Title,
+				Description: task.Description,
+				Deadline:    task.Deadline,
+				UserID:      userID,
+			}
+
+			jsonMsg, err := json.Marshal(msg)
+			if err != nil {
+				log.Printf("failed to marshal message: %v", err)
+				return
+			}
+
+			err = s.producer.Produce(
+				ctx,
+				string(jsonMsg),
+				"board.event",
+				userID,
+				time.Second*10,
+			)
+			if err != nil {
+				log.Printf("failed to produce message: %v", err)
+				return
+			}
+		}()
+	}
+
+	fmt.Println("task", task)
 	return task, nil
 }
 
