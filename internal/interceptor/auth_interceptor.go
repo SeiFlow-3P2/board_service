@@ -2,7 +2,6 @@ package interceptor
 
 import (
 	"context"
-	"log"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -28,7 +27,6 @@ func AuthUnaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 		userIDValues := md.Get("x-user-id")
 		if len(userIDValues) == 0 {
-			log.Println("AuthUnaryServerInterceptor: x-user-id not found in metadata")
 			return nil, status.Errorf(codes.Unauthenticated, "x-user-id is not provided")
 		}
 
@@ -36,7 +34,6 @@ func AuthUnaryServerInterceptor() grpc.UnaryServerInterceptor {
 		if len(userIDValues) > 0 {
 			userID = userIDValues[0]
 			ctx = context.WithValue(ctx, UserIDKey, userID)
-			log.Printf("AuthUnaryServerInterceptor: UserID %s extracted and added to context", userID)
 		}
 
 		return handler(ctx, req)

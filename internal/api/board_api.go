@@ -94,10 +94,11 @@ func (h *BoardServiceHandler) CreateBoard(ctx context.Context, req *pb.CreateBoa
 		case err == service.ErrUserNotInContext:
 			return nil, status.Error(codes.InvalidArgument, err.Error())
 		case err == service.ErrBoardExists:
-			return nil, status.Error(codes.NotFound, err.Error())
+			return nil, status.Error(codes.AlreadyExists, err.Error())
 		default:
 			return nil, status.Error(codes.Internal, err.Error())
-	}}
+		}
+	}
 	return h.boardToGetInfoResponse(board), nil
 }
 
