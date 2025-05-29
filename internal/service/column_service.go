@@ -90,10 +90,12 @@ func (s *ColumnService) CreateColumn(ctx context.Context, input CreateColumnInpu
 }
 
 func (s *ColumnService) UpdateColumn(ctx context.Context, input UpdateColumnInput) (*models.Column, error) {
-
 	column, err := s.columnRepo.GetColumnInfo(ctx, input.ID)
 	if err != nil {
-		return nil, err
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("column not found")
+		}
+		return nil, fmt.Errorf("failed to get column info: %w", err)
 	}
 
 	updates := &repository.ColumnUpdates{}
