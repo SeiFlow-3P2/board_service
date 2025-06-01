@@ -15,6 +15,7 @@ import (
 	"github.com/SeiFlow-3P2/board_service/internal/interceptor"
 	"github.com/SeiFlow-3P2/board_service/internal/repository"
 	"github.com/SeiFlow-3P2/board_service/internal/service"
+	"github.com/SeiFlow-3P2/board_service/pkg/env"
 	pb "github.com/SeiFlow-3P2/board_service/pkg/proto/v1"
 	"github.com/SeiFlow-3P2/shared/kafka"
 	"google.golang.org/grpc"
@@ -55,9 +56,8 @@ func (a *App) Start(ctx context.Context) error {
 	boardService := service.NewBoardService(boardRepo)
 	columnService := service.NewColumnService(columnRepo, boardRepo)
 
-	// TODO: replace addresses
 	p, err := kafka.NewProducer(
-		[]string{"localhost:9091", "localhost:9092", "localhost:9093"},
+		env.GetKafkaBrokers(),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create kafka producer: %v", err)
