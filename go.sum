@@ -1,8 +1,6 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/SeiFlow-3P2/shared v0.1.0 h1:cTsFrU1D7Cfw1BlgdI+haJSLMHBkRuQe8+3O9/9VbhU=
-github.com/SeiFlow-3P2/shared v0.1.0/go.mod h1:uOu3alnRksFsydaSbO9EAxcABwRgRX5U/2mFKUYfla0=
 github.com/SeiFlow-3P2/shared v0.1.1 h1:zmKoA9r22gF5sDI7vJ3ORNMhhjGx95nqog3qYp+Gg7c=
 github.com/SeiFlow-3P2/shared v0.1.1/go.mod h1:uOu3alnRksFsydaSbO9EAxcABwRgRX5U/2mFKUYfla0=
 github.com/actgardner/gogen-avro/v10 v10.1.0/go.mod h1:o+ybmVjEa27AAr35FRqU98DJu1fXES56uXniYFv4yDA=
