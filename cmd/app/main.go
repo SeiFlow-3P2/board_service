@@ -20,7 +20,7 @@ func main() {
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
-		MongoURI:     env.GetMongoURI(),
+		MongoURL:     env.GetMongoURL(),
 		MongoDB:      env.GetMongoName(),
 	}
 

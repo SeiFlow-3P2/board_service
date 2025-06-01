@@ -29,7 +29,7 @@ type Config struct {
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
 	IdleTimeout  time.Duration
-	MongoURI     string
+	MongoURL     string
 	MongoDB      string
 }
 
@@ -44,7 +44,7 @@ func New(cfg *Config) *App {
 }
 
 func (a *App) Start(ctx context.Context) error {
-	client, err := config.NewMongoClient(a.config.MongoURI)
+	client, err := config.NewMongoClient(a.config.MongoURL)
 	if err != nil {
 		return fmt.Errorf("failed to connect to MongoDB: %v", err)
 	}

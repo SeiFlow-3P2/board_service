@@ -14,14 +14,14 @@ func LoadEnv() error {
 		return fmt.Errorf("error loading .env file: %v", err)
 	}
 
-	mongoURI := os.Getenv("MONGODB_URI")
-	if mongoURI == "" {
-		return fmt.Errorf("MONGODB_URI is not set")
+	mongoURL := os.Getenv("ME_CONFIG_MONGODB_URL")
+	if mongoURL == "" {
+		return fmt.Errorf("ME_CONFIG_MONGODB_URL is not set")
 	}
 
-	mongoName := os.Getenv("MONGODB_NAME")
+	mongoName := os.Getenv("MONGO_DATABASE")
 	if mongoName == "" {
-		return fmt.Errorf("MONGODB_NAME is not set")
+		return fmt.Errorf("MONGO_DATABASE is not set")
 	}
 
 	kafkaBrokers := os.Getenv("KAFKA_BROKERS")
@@ -37,16 +37,16 @@ func LoadEnv() error {
 	return nil
 }
 
-func GetMongoURI() string {
-	return os.Getenv("MONGODB_URI")
+func GetMongoURL() string {
+	return os.Getenv("ME_CONFIG_MONGODB_URL")
 }
 
 func GetMongoName() string {
-	return os.Getenv("MONGODB_NAME")
+	return os.Getenv("MONGO_DATABASE")
 }
 
 func GetPort() string {
-	return GetEnvDefault("PORT", "9090")
+	return GetEnvDefault("PORT", "8090")
 }
 
 func GetAppName() string {
