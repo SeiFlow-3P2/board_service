@@ -9,6 +9,7 @@ import (
 	"github.com/SeiFlow-3P2/board_service/internal/interceptor"
 	"github.com/SeiFlow-3P2/board_service/internal/models"
 	"github.com/SeiFlow-3P2/board_service/internal/repository"
+	"github.com/SeiFlow-3P2/shared/telemetry"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -45,17 +46,23 @@ type UpdateBoardInput struct {
 }
 
 func (s *BoardService) CreateBoard(ctx context.Context, input CreateBoardInput) (*models.Board, error) {
+	ctx, span := telemetry.StartSpan(ctx, "BoardService.CreateBoard")
+	defer span.End()
+
 	userID, ok := ctx.Value(interceptor.UserIDKey).(string)
 	if !ok {
+		telemetry.RecordError(span, ErrUserNotInContext)
 		return nil, ErrUserNotInContext
 	}
 
 	boards, err := s.boardRepo.GetBoards(ctx, userID)
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
 	for _, board := range boards {
 		if board.Title == input.Title {
+			telemetry.RecordError(span, ErrBoardExists)
 			return nil, ErrBoardExists
 		}
 	}
@@ -128,9 +135,13 @@ func (s *BoardService) CreateBoard(ctx context.Context, input CreateBoardInput) 
 }
 
 func (s *BoardService) GetBoardInfo(ctx context.Context, id uuid.UUID) (*models.Board, error) {
+	ctx, span := telemetry.StartSpan(ctx, "BoardService.GetBoardInfo")
+	defer span.End()
+
 	board, err := s.boardRepo.GetBoardInfo(ctx, id)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
+			telemetry.RecordError(span, ErrBoardNotFound)
 			return nil, ErrBoardNotFound
 		}
 		return nil, err
@@ -139,6 +150,9 @@ func (s *BoardService) GetBoardInfo(ctx context.Context, id uuid.UUID) (*models.
 }
 
 func (s *BoardService) GetBoards(ctx context.Context) ([]*models.Board, error) {
+	ctx, span := telemetry.StartSpan(ctx, "BoardService.GetBoards")
+	defer span.End()
+
 	userID, ok := ctx.Value(interceptor.UserIDKey).(string)
 	if !ok {
 		return nil, ErrUserNotInContext
@@ -152,9 +166,13 @@ func (s *BoardService) GetBoards(ctx context.Context) ([]*models.Board, error) {
 }
 
 func (s *BoardService) UpdateBoard(ctx context.Context, input UpdateBoardInput) (*models.Board, error) {
+	ctx, span := telemetry.StartSpan(ctx, "BoardService.UpdateBoard")
+	defer span.End()
+
 	board, err := s.boardRepo.GetBoardInfo(ctx, input.ID)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
+			telemetry.RecordError(span, ErrBoardNotFound)
 			return nil, ErrBoardNotFound
 		}
 		return nil, err
@@ -166,10 +184,12 @@ func (s *BoardService) UpdateBoard(ctx context.Context, input UpdateBoardInput) 
 	if input.Title != nil {
 		existBoards, err := s.boardRepo.GetBoards(ctx, board.User_id)
 		if err != nil {
+			telemetry.RecordError(span, err)
 			return nil, err
 		}
 		for _, b := range existBoards {
 			if b.ID != input.ID && strings.EqualFold(b.Title, *input.Title) {
+				telemetry.RecordError(span, ErrBoardExists)
 				return nil, ErrBoardExists
 			}
 		}
@@ -184,9 +204,13 @@ func (s *BoardService) UpdateBoard(ctx context.Context, input UpdateBoardInput) 
 }
 
 func (s *BoardService) DeleteBoard(ctx context.Context, id uuid.UUID) error {
+	ctx, span := telemetry.StartSpan(ctx, "BoardService.DeleteBoard")
+	defer span.End()
+
 	_, err := s.boardRepo.GetBoardInfo(ctx, id)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
+			telemetry.RecordError(span, ErrBoardNotFound)
 			return ErrBoardNotFound
 		}
 		return err
@@ -194,6 +218,7 @@ func (s *BoardService) DeleteBoard(ctx context.Context, id uuid.UUID) error {
 
 	err = s.boardRepo.DeleteBoard(ctx, id)
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return err
 	}
 

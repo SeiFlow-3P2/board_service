@@ -18,11 +18,13 @@ import (
 	"github.com/SeiFlow-3P2/board_service/pkg/env"
 	pb "github.com/SeiFlow-3P2/board_service/pkg/proto/v1"
 	"github.com/SeiFlow-3P2/shared/kafka"
+	"github.com/SeiFlow-3P2/shared/telemetry"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
 type Config struct {
+	AppName      string
 	Port         string
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
@@ -46,8 +48,21 @@ func (a *App) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to connect to MongoDB: %v", err)
 	}
-
 	db := client.Database(a.config.MongoDB)
+
+	shutdownTracer, err := telemetry.NewTracerProvider(
+		ctx,
+		a.config.AppName,
+		env.GetOtelEndpoint(),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create tracer provider: %w", err)
+	}
+	defer func() {
+		if err := shutdownTracer(ctx); err != nil {
+			log.Printf("failed to shutdown tracer: %v", err)
+		}
+	}()
 
 	boardRepo := repository.NewBoardRepository(db)
 	columnRepo := repository.NewColumnRepository(db)

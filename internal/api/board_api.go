@@ -7,6 +7,7 @@ import (
 	"github.com/SeiFlow-3P2/board_service/internal/models"
 	"github.com/SeiFlow-3P2/board_service/internal/service"
 	pb "github.com/SeiFlow-3P2/board_service/pkg/proto/v1"
+	"github.com/SeiFlow-3P2/shared/telemetry"
 	"github.com/google/uuid"
 
 	"google.golang.org/grpc/codes"
@@ -66,21 +67,34 @@ func (h *BoardServiceHandler) boardToGetInfoResponse(board *models.Board) *pb.Ge
 }
 
 func (h *BoardServiceHandler) CreateBoard(ctx context.Context, req *pb.CreateBoardRequest) (*pb.GetBoardInfoResponse, error) {
+	ctx, span := telemetry.StartSpan(ctx, "BoardHandler.CreateBoard")
+	defer span.End()
+
 	if req.Name == "" {
-		return nil, status.Error(codes.InvalidArgument, "title is required")
+		err := status.Error(codes.InvalidArgument, "title is required")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 	if req.Description == "" {
-		return nil, status.Error(codes.InvalidArgument, "description is required")
+		err := status.Error(codes.InvalidArgument, "description is required")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 	if req.Methodology == "" {
-		return nil, status.Error(codes.InvalidArgument, "methodology is required")
+		err := status.Error(codes.InvalidArgument, "methodology is required")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 	if req.Category == "" {
-		return nil, status.Error(codes.InvalidArgument, "category is required")
+		err := status.Error(codes.InvalidArgument, "category is required")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	if req.Methodology != "kanban" && req.Methodology != "simple" {
-		return nil, status.Error(codes.InvalidArgument, "methotodology must be kanban or simple")
+		err := status.Error(codes.InvalidArgument, "methotodology must be kanban or simple")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	board, err := h.boardService.CreateBoard(ctx, service.CreateBoardInput{
@@ -92,44 +106,68 @@ func (h *BoardServiceHandler) CreateBoard(ctx context.Context, req *pb.CreateBoa
 	if err != nil {
 		switch {
 		case err == service.ErrUserNotInContext:
-			return nil, status.Error(codes.InvalidArgument, err.Error())
+			err := status.Error(codes.InvalidArgument, err.Error())
+			telemetry.RecordError(span, err)
+			return nil, err
 		case err == service.ErrBoardExists:
-			return nil, status.Error(codes.AlreadyExists, err.Error())
+			err := status.Error(codes.AlreadyExists, err.Error())
+			telemetry.RecordError(span, err)
+			return nil, err
 		default:
-			return nil, status.Error(codes.Internal, err.Error())
+			err := status.Error(codes.Internal, err.Error())
+			telemetry.RecordError(span, err)
+			return nil, err
 		}
 	}
 	return h.boardToGetInfoResponse(board), nil
 }
 
 func (h *BoardServiceHandler) GetBoardInfo(ctx context.Context, req *pb.GetBoardInfoRequest) (*pb.GetBoardInfoResponse, error) {
+	ctx, span := telemetry.StartSpan(ctx, "BoardHandler.GetBoardInfo")
+	defer span.End()
+
 	if req.Id == "" {
-		return nil, status.Error(codes.InvalidArgument, "board ID is required")
+		err := status.Error(codes.InvalidArgument, "board ID is required")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	boardID, err := uuid.Parse(req.Id)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid board ID")
+		err := status.Error(codes.InvalidArgument, "invalid board ID")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	board, err := h.boardService.GetBoardInfo(ctx, boardID)
 	if err != nil {
 		if err == service.ErrBoardNotFound {
-			return nil, status.Error(codes.NotFound, "board not found")
+			err := status.Error(codes.NotFound, "board not found")
+			telemetry.RecordError(span, err)
+			return nil, err
 		}
-		return nil, status.Error(codes.Internal, err.Error())
+		err := status.Error(codes.Internal, err.Error())
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	return h.boardToGetInfoResponse(board), nil
 }
 
 func (h *BoardServiceHandler) GetBoards(ctx context.Context, req *pb.GetBoardsRequest) (*pb.BoardsListResponse, error) {
+	ctx, span := telemetry.StartSpan(ctx, "BoardHandler.GetBoards")
+	defer span.End()
+
 	boards, err := h.boardService.GetBoards(ctx)
 	if err != nil {
 		if err == service.ErrUserNotInContext {
-			return nil, status.Error(codes.InvalidArgument, err.Error())
+			err := status.Error(codes.InvalidArgument, err.Error())
+			telemetry.RecordError(span, err)
+			return nil, err
 		}
-		return nil, status.Error(codes.Internal, err.Error())
+		err := status.Error(codes.Internal, err.Error())
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	response := &pb.BoardsListResponse{
@@ -154,15 +192,24 @@ func (h *BoardServiceHandler) GetBoards(ctx context.Context, req *pb.GetBoardsRe
 }
 
 func (h *BoardServiceHandler) UpdateBoard(ctx context.Context, req *pb.UpdateBoardRequest) (*pb.GetBoardInfoResponse, error) {
+	ctx, span := telemetry.StartSpan(ctx, "BoardHandler.UpdateBoard")
+	defer span.End()
+
 	if req.Id == "" {
-		return nil, status.Error(codes.InvalidArgument, "board ID is required")
+		err := status.Error(codes.InvalidArgument, "board ID is required")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 	boardID, err := uuid.Parse(req.Id)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid board ID")
+		err := status.Error(codes.InvalidArgument, "invalid board ID")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 	if req.Name == nil && req.Description == nil && req.Progress == nil && req.Favorite == nil {
-		return nil, status.Error(codes.InvalidArgument, "at least one field is required")
+		err := status.Error(codes.InvalidArgument, "at least one field is required")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	var title *string
@@ -197,26 +244,39 @@ func (h *BoardServiceHandler) UpdateBoard(ctx context.Context, req *pb.UpdateBoa
 	board, err := h.boardService.UpdateBoard(ctx, updates)
 	if err != nil {
 		if err == service.ErrBoardNotFound {
-			return nil, status.Error(codes.NotFound, "board not found")
+			err := status.Error(codes.NotFound, "board not found")
+			telemetry.RecordError(span, err)
+			return nil, err
 		}
-		return nil, status.Error(codes.Internal, err.Error())
+		err := status.Error(codes.Internal, err.Error())
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	return h.boardToGetInfoResponse(board), nil
 }
 
 func (h *BoardServiceHandler) DeleteBoard(ctx context.Context, req *pb.DeleteBoardRequest) (*emptypb.Empty, error) {
+	ctx, span := telemetry.StartSpan(ctx, "BoardHandler.DeleteBoard")
+	defer span.End()
+
 	boardID, err := uuid.Parse(req.Id)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid board ID")
+		err := status.Error(codes.InvalidArgument, "invalid board ID")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	err = h.boardService.DeleteBoard(ctx, boardID)
 	if err != nil {
 		if err == service.ErrBoardNotFound {
-			return nil, status.Error(codes.NotFound, "board not found")
+			err := status.Error(codes.NotFound, "board not found")
+			telemetry.RecordError(span, err)
+			return nil, err
 		}
-		return nil, status.Error(codes.Internal, err.Error())
+		err := status.Error(codes.Internal, err.Error())
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	return &emptypb.Empty{}, nil

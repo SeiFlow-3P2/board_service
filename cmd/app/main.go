@@ -15,6 +15,7 @@ func main() {
 	}
 
 	cfg := &app.Config{
+		AppName:      env.GetAppName(),
 		Port:         env.GetPort(),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,

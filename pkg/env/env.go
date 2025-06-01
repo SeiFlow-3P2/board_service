@@ -29,6 +29,11 @@ func LoadEnv() error {
 		return fmt.Errorf("KAFKA_BROKERS is not set")
 	}
 
+	otelEndpoint := os.Getenv("OTEL_ADDR")
+	if otelEndpoint == "" {
+		return fmt.Errorf("OTEL_ADDR is not set")
+	}
+
 	return nil
 }
 
@@ -50,6 +55,10 @@ func GetAppName() string {
 
 func GetKafkaBrokers() []string {
 	return strings.Split(os.Getenv("KAFKA_BROKERS"), ",")
+}
+
+func GetOtelEndpoint() string {
+	return os.Getenv("OTEL_ADDR")
 }
 
 func GetEnvDefault(key, defaultValue string) string {

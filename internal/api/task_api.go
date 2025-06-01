@@ -7,6 +7,7 @@ import (
 
 	"github.com/SeiFlow-3P2/board_service/internal/service"
 	pb "github.com/SeiFlow-3P2/board_service/pkg/proto/v1"
+	"github.com/SeiFlow-3P2/shared/telemetry"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -22,26 +23,39 @@ func NewTaskServiceHandler(taskService *service.TaskService) *TaskServiceHandler
 }
 
 func (h *TaskServiceHandler) CreateTask(ctx context.Context, req *pb.CreateTaskRequest) (*pb.TaskResponse, error) {
+	ctx, span := telemetry.StartSpan(ctx, "TaskHandler.CreateTask")
+	defer span.End()
+
 	if strings.TrimSpace(req.Name) == "" {
-		return nil, status.Error(codes.InvalidArgument, "name is required")
+		err := status.Error(codes.InvalidArgument, "name is required")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	if strings.TrimSpace(req.Description) == "" {
-		return nil, status.Error(codes.InvalidArgument, "description is required")
+		err := status.Error(codes.InvalidArgument, "description is required")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	columnID, err := uuid.Parse(req.ColumnId)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid column ID")
+		err := status.Error(codes.InvalidArgument, "invalid column ID")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	deadline, err := time.Parse(time.RFC3339, req.Deadline)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid deadline format")
+		err := status.Error(codes.InvalidArgument, "invalid deadline format")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	if deadline.Before(time.Now()) {
-		return nil, status.Error(codes.InvalidArgument, "deadline must be in the future")
+		err := status.Error(codes.InvalidArgument, "deadline must be in the future")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	task, err := h.taskService.CreateTask(ctx, service.CreateTaskInput{
@@ -52,7 +66,9 @@ func (h *TaskServiceHandler) CreateTask(ctx context.Context, req *pb.CreateTaskR
 		InCalendar:  req.InCalendar,
 	})
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		err := status.Error(codes.Internal, err.Error())
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	return &pb.TaskResponse{
@@ -66,18 +82,27 @@ func (h *TaskServiceHandler) CreateTask(ctx context.Context, req *pb.CreateTaskR
 }
 
 func (h *TaskServiceHandler) MoveTask(ctx context.Context, req *pb.MoveTaskRequest) (*pb.MoveTaskResponse, error) {
+	ctx, span := telemetry.StartSpan(ctx, "TaskHandler.MoveTask")
+	defer span.End()
+
 	if req.TaskId == "" {
-		return nil, status.Error(codes.InvalidArgument, "task ID is required")
+		err := status.Error(codes.InvalidArgument, "task ID is required")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	taskID, err := uuid.Parse(req.TaskId)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid task ID")
+		err := status.Error(codes.InvalidArgument, "invalid task ID")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	newColumnID, err := uuid.Parse(req.NewColumnId)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid column ID")
+		err := status.Error(codes.InvalidArgument, "invalid column ID")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	task, err := h.taskService.MoveTask(ctx, service.MoveTaskInput{
@@ -87,11 +112,17 @@ func (h *TaskServiceHandler) MoveTask(ctx context.Context, req *pb.MoveTaskReque
 	if err != nil {
 		switch {
 		case err == service.ErrTaskNotFound:
-			return nil, status.Error(codes.NotFound, "task not found")
+			err := status.Error(codes.NotFound, "task not found")
+			telemetry.RecordError(span, err)
+			return nil, err
 		case err.Error() == "new column not found":
-			return nil, status.Error(codes.NotFound, "new column not found")
+			err := status.Error(codes.NotFound, "new column not found")
+			telemetry.RecordError(span, err)
+			return nil, err
 		default:
-			return nil, status.Error(codes.Internal, err.Error())
+			err := status.Error(codes.Internal, err.Error())
+			telemetry.RecordError(span, err)
+			return nil, err
 		}
 	}
 
@@ -102,13 +133,20 @@ func (h *TaskServiceHandler) MoveTask(ctx context.Context, req *pb.MoveTaskReque
 }
 
 func (h *TaskServiceHandler) UpdateTask(ctx context.Context, req *pb.UpdateTaskRequest) (*pb.TaskResponse, error) {
+	ctx, span := telemetry.StartSpan(ctx, "TaskHandler.UpdateTask")
+	defer span.End()
+
 	if req.Id == "" {
-		return nil, status.Error(codes.InvalidArgument, "task ID is required")
+		err := status.Error(codes.InvalidArgument, "task ID is required")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	taskID, err := uuid.Parse(req.Id)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid task ID")
+		err := status.Error(codes.InvalidArgument, "invalid task ID")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	if req.Name != nil {
@@ -137,9 +175,13 @@ func (h *TaskServiceHandler) UpdateTask(ctx context.Context, req *pb.UpdateTaskR
 	})
 	if err != nil {
 		if err == service.ErrTaskNotFound {
-			return nil, status.Error(codes.NotFound, "task not found")
+			err := status.Error(codes.NotFound, "task not found")
+			telemetry.RecordError(span, err)
+			return nil, err
 		}
-		return nil, status.Error(codes.Internal, err.Error())
+		err := status.Error(codes.Internal, err.Error())
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	return &pb.TaskResponse{
@@ -153,13 +195,20 @@ func (h *TaskServiceHandler) UpdateTask(ctx context.Context, req *pb.UpdateTaskR
 }
 
 func (h *TaskServiceHandler) DeleteTask(ctx context.Context, req *pb.DeleteTaskRequest) (*emptypb.Empty, error) {
+	ctx, span := telemetry.StartSpan(ctx, "TaskHandler.DeleteTask")
+	defer span.End()
+
 	if req.Id == "" {
-		return nil, status.Error(codes.InvalidArgument, "task ID is required")
+		err := status.Error(codes.InvalidArgument, "task ID is required")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	taskID, err := uuid.Parse(req.Id)
 	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid task ID")
+		err := status.Error(codes.InvalidArgument, "invalid task ID")
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	err = h.taskService.DeleteTask(ctx, service.DeleteTaskInput{
@@ -167,9 +216,13 @@ func (h *TaskServiceHandler) DeleteTask(ctx context.Context, req *pb.DeleteTaskR
 	})
 	if err != nil {
 		if err == service.ErrTaskNotFound {
-			return nil, status.Error(codes.NotFound, "task not found")
+			err := status.Error(codes.NotFound, "task not found")
+			telemetry.RecordError(span, err)
+			return nil, err
 		}
-		return nil, status.Error(codes.Internal, err.Error())
+		err := status.Error(codes.Internal, err.Error())
+		telemetry.RecordError(span, err)
+		return nil, err
 	}
 
 	return &emptypb.Empty{}, nil

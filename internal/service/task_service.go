@@ -12,6 +12,7 @@ import (
 	"github.com/SeiFlow-3P2/board_service/internal/models"
 	"github.com/SeiFlow-3P2/board_service/internal/repository"
 	"github.com/SeiFlow-3P2/shared/kafka"
+	"github.com/SeiFlow-3P2/shared/telemetry"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -69,8 +70,12 @@ type DeleteTaskInput struct {
 }
 
 func (s *TaskService) CreateTask(ctx context.Context, input CreateTaskInput) (*models.Task, error) {
+	ctx, span := telemetry.StartSpan(ctx, "TaskService.CreateTask")
+	defer span.End()
+
 	userID, ok := ctx.Value(interceptor.UserIDKey).(string)
 	if !ok {
+		telemetry.RecordError(span, ErrUserNotInContext)
 		return nil, ErrUserNotInContext
 	}
 
@@ -85,6 +90,7 @@ func (s *TaskService) CreateTask(ctx context.Context, input CreateTaskInput) (*m
 
 	task, err := s.taskRepo.CreateTask(ctx, task)
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
 
@@ -100,6 +106,7 @@ func (s *TaskService) CreateTask(ctx context.Context, input CreateTaskInput) (*m
 
 			jsonMsg, err := json.Marshal(msg)
 			if err != nil {
+				telemetry.RecordError(span, err)
 				log.Printf("failed to marshal message: %v", err)
 				return
 			}
@@ -112,6 +119,7 @@ func (s *TaskService) CreateTask(ctx context.Context, input CreateTaskInput) (*m
 				time.Second*10,
 			)
 			if err != nil {
+				telemetry.RecordError(span, err)
 				log.Printf("failed to produce message: %v", err)
 				return
 			}
@@ -123,25 +131,32 @@ func (s *TaskService) CreateTask(ctx context.Context, input CreateTaskInput) (*m
 }
 
 func (s *TaskService) MoveTask(ctx context.Context, input MoveTaskInput) (*models.Task, error) {
+	ctx, span := telemetry.StartSpan(ctx, "TaskService.MoveTask")
+	defer span.End()
 
 	_, err := s.taskRepo.GetTask(ctx, input.TaskID)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
+			telemetry.RecordError(span, ErrTaskNotFound)
 			return nil, ErrTaskNotFound
 		}
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
 
 	_, err = s.columnRepo.GetColumnInfo(ctx, input.NewColumnID)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
+			telemetry.RecordError(span, ErrNewColumnNotFound)
 			return nil, ErrNewColumnNotFound
 		}
+		telemetry.RecordError(span, err)
 		return nil, ErrGetColumnInfo
 	}
 
 	err = s.taskRepo.MoveTask(ctx, input.TaskID, input.NewColumnID)
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
 
@@ -149,12 +164,16 @@ func (s *TaskService) MoveTask(ctx context.Context, input MoveTaskInput) (*model
 }
 
 func (s *TaskService) UpdateTask(ctx context.Context, input UpdateTaskInput) (*models.Task, error) {
+	ctx, span := telemetry.StartSpan(ctx, "TaskService.UpdateTask")
+	defer span.End()
 
 	_, err := s.taskRepo.GetTask(ctx, input.TaskID)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
+			telemetry.RecordError(span, ErrTaskNotFound)
 			return nil, ErrTaskNotFound
 		}
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
 
@@ -168,12 +187,16 @@ func (s *TaskService) UpdateTask(ctx context.Context, input UpdateTaskInput) (*m
 }
 
 func (s *TaskService) DeleteTask(ctx context.Context, input DeleteTaskInput) error {
+	ctx, span := telemetry.StartSpan(ctx, "TaskService.DeleteTask")
+	defer span.End()
 
 	err := s.taskRepo.DeleteTask(ctx, input.TaskID)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
+			telemetry.RecordError(span, ErrTaskNotFound)
 			return ErrTaskNotFound
 		}
+		telemetry.RecordError(span, err)
 		return err
 	}
 
