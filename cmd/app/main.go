@@ -6,19 +6,22 @@ import (
 	"time"
 
 	"github.com/SeiFlow-3P2/board_service/internal/app"
-	"github.com/SeiFlow-3P2/board_service/internal/config"
+	"github.com/SeiFlow-3P2/board_service/pkg/env"
 )
 
 func main() {
-	config.LoadEnv()
+	if err := env.LoadEnv(); err != nil {
+		log.Fatalf("Failed to load env: %v", err)
+	}
 
 	cfg := &app.Config{
-		Port:         "9090",
+		AppName:      env.GetAppName(),
+		Port:         env.GetPort(),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
-		MongoURI:     config.GetMongoURI(),
-		MongoDB:      config.GetMongoDB(),
+		MongoURI:     env.GetMongoURI(),
+		MongoDB:      env.GetMongoName(),
 	}
 
 	app := app.New(cfg)

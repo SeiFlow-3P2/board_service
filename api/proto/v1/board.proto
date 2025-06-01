@@ -64,7 +64,7 @@ service BoardService {
     }
     rpc MoveTask(MoveTaskRequest) returns (MoveTaskResponse) {
         option (google.api.http) = {
-            patch: "/v1/tasks/move/{new_column_id}"
+            post: "/v1/tasks/move/{new_column_id}"
             body: "*"
         };
     }

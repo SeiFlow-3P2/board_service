@@ -1483,7 +1483,7 @@ const file_board_proto_rawDesc = "" +
 	"\fDeleteColumn\x12\x1d.board_v1.DeleteColumnRequest\x1a\x16.google.protobuf.Empty\"\x18\x82\xd3\xe4\x93\x02\x12*\x10/v1/columns/{id}\x12k\n" +
 	"\n" +
 	"CreateTask\x12\x1b.board_v1.CreateTaskRequest\x1a\x16.board_v1.TaskResponse\"(\x82\xd3\xe4\x93\x02\":\x01*\"\x1d/v1/columns/{column_id}/tasks\x12l\n" +
-	"\bMoveTask\x12\x19.board_v1.MoveTaskRequest\x1a\x1a.board_v1.MoveTaskResponse\")\x82\xd3\xe4\x93\x02#:\x01*2\x1e/v1/tasks/move/{new_column_id}\x12\\\n" +
+	"\bMoveTask\x12\x19.board_v1.MoveTaskRequest\x1a\x1a.board_v1.MoveTaskResponse\")\x82\xd3\xe4\x93\x02#:\x01*\"\x1e/v1/tasks/move/{new_column_id}\x12\\\n" +
 	"\n" +
 	"UpdateTask\x12\x1b.board_v1.UpdateTaskRequest\x1a\x16.board_v1.TaskResponse\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*2\x0e/v1/tasks/{id}\x12Y\n" +
 	"\n" +

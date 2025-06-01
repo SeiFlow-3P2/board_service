@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/SeiFlow-3P2/board_service/internal/models"
+	"github.com/SeiFlow-3P2/shared/telemetry"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -33,34 +34,49 @@ func NewTaskRepository(db *mongo.Database) TaskRepository {
 }
 
 func (r *taskRepository) CreateTask(ctx context.Context, task *models.Task) (*models.Task, error) {
+	ctx, span := telemetry.StartSpan(ctx, "TaskRepository.CreateTask")
+	defer span.End()
+
 	collection := r.db.Collection("Tasks")
 	_, err := collection.InsertOne(ctx, task)
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
 	return task, nil
 }
 
 func (r *taskRepository) GetTask(ctx context.Context, id uuid.UUID) (*models.Task, error) {
+	ctx, span := telemetry.StartSpan(ctx, "TaskRepository.GetTask")
+	defer span.End()
+
 	collection := r.db.Collection("Tasks")
 	var task models.Task
 	err := collection.FindOne(ctx, bson.M{"_id": id}).Decode(&task)
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
 	return &task, nil
 }
 
 func (r *taskRepository) MoveTask(ctx context.Context, id uuid.UUID, newColumnID uuid.UUID) error {
+	ctx, span := telemetry.StartSpan(ctx, "TaskRepository.MoveTask")
+	defer span.End()
+
 	collection := r.db.Collection("Tasks")
 	_, err := collection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": bson.M{"column_id": newColumnID}})
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return err
 	}
 	return nil
 }
 
 func (r *taskRepository) UpdateTask(ctx context.Context, id uuid.UUID, updates *TaskUpdates) (*models.Task, error) {
+	ctx, span := telemetry.StartSpan(ctx, "TaskRepository.UpdateTask")
+	defer span.End()
+
 	collection := r.db.Collection("Tasks")
 
 	updateFields := bson.M{}
@@ -80,15 +96,20 @@ func (r *taskRepository) UpdateTask(ctx context.Context, id uuid.UUID, updates *
 
 	_, err := collection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": updateFields})
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return nil, err
 	}
 	return r.GetTask(ctx, id)
 }
 
 func (r *taskRepository) DeleteTask(ctx context.Context, id uuid.UUID) error {
+	ctx, span := telemetry.StartSpan(ctx, "TaskRepository.DeleteTask")
+	defer span.End()
+
 	collection := r.db.Collection("Tasks")
 	_, err := collection.DeleteOne(ctx, bson.M{"_id": id})
 	if err != nil {
+		telemetry.RecordError(span, err)
 		return err
 	}
 	return nil
