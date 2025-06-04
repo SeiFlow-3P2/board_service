@@ -1,0 +1,17 @@
+name: Trigger for main repo
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  trigger-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger 
+        run: |
+          curl -X POST -H "Accept: application/vnd.github.v3+json" \
+               -H "Authorization: token ${{ secrets.SEIFLOW_SECRET }}" \
+               https://api.github.com/repos/SeiFlow-3P2/seiflow/dispatches \
+               -d '{"event_type":"update_submodules"}'
